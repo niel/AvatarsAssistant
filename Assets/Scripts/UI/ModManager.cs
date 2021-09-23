@@ -99,7 +99,7 @@ namespace UI
 		public void CheckInstalledMods()
 		{
 			// We get the list of mods from the config file
-			string configText = File.ReadAllText(_dataPath + @"InstalledMods.cfg");
+			string configText = File.ReadAllText(_dataPath + @"SavedMods/InstalledMods.cfg");
 
 			// Destroy any previously created objects, before populating it again.
 			ClearModList();
@@ -367,45 +367,46 @@ namespace UI
 			_dataPath = baseAppInstallLocation + sotaDirectory;
 
 			// Check that necessary directories and files exist.
-			if (!Directory.Exists(_dataPath + @"/SavedMods"))
+			if (!Directory.Exists(_dataPath + @"SavedMods"))
 			{
-				Directory.CreateDirectory(_dataPath + @"/SavedMods");
+				Directory.CreateDirectory(_dataPath + @"SavedMods");
 			}
 
-			if (!Directory.Exists(_dataPath + @"/SavedMods/backup"))
+			if (!Directory.Exists(_dataPath + @"SavedMods/backup"))
 			{
-				Directory.CreateDirectory(_dataPath + @"/SavedMods/backup");
+				Directory.CreateDirectory(_dataPath + @"SavedMods/backup");
 			}
 
-			if (!Directory.Exists(_dataPath + @"/SavedMods/disabled"))
+			if (!Directory.Exists(_dataPath + @"SavedMods/disabled"))
 			{
-				Directory.CreateDirectory(_dataPath + @"/SavedMods/disabled");
+				Directory.CreateDirectory(_dataPath + @"SavedMods/disabled");
 			}
 
 			// Check if our settings file exists. if not, create it (this only saves the location of the launcher)
-			if (!File.Exists(_dataPath + @"/SavedMods/Settings.cfg"))
+			if (!File.Exists(_dataPath + @"SavedMods/Settings.cfg"))
 			{
 				//File.CreateText(_dataPath + @"/SavedMods/Settings.cfg");
 				//create only when the button is clicked
 			}
 			else
 			{
-				JsonUtility.FromJson<LauncherLocation>(File.ReadAllText(_dataPath + @"/SavedMods/Settings.cfg"));
+				JsonUtility.FromJson<LauncherLocation>(File.ReadAllText(_dataPath + @"SavedMods/Settings.cfg"));
 			}
 
+			//Debug.Log("Checking existence of file: " + _dataPath + @"SavedMods/InstalledMods.cfg");
 			// Check if the installed mods config file is there, if not we create it.
-			if (!File.Exists(_dataPath + @"/SavedMods/InstalledMods.cfg"))
+			if (!File.Exists(_dataPath + @"SavedMods/InstalledMods.cfg"))
 			{
-				File.CreateText(_dataPath + @"/SavedMods/InstalledMods.cfg");
+				//Debug.Log("Creating InstalledMods file!");
+				File.CreateText(_dataPath + @"SavedMods/InstalledMods.cfg");
 				//listedModInstance.Add((GameObject)Instantiate(NoModFound, installedModsScrollviewContent.transform));
 			}
-			/*
-			else //if the file exists we check if there are any installed mods.
+			else // if the file exists we check if there are any installed mods.
 			{
-				CheckInstalledMods();
+				//Debug.Log("Checking for installed mods!");
+				//CheckInstalledMods();
 			}
-			*/
-			Debug.Log("About to set List Mode");
+			//Debug.Log("About to set List Mode");
 
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
@@ -591,7 +592,7 @@ namespace UI
 			PopulateModsList(true);
 		}
 
-        private void StartLauncherClicked()
+		private void StartLauncherClicked()
         {
 			throw new NotImplementedException();
 			if (_startLauncher.visible)
