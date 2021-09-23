@@ -1,24 +1,25 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="AppStyle.uss" />
-    <ui:VisualElement name="Background" style="width: 1400px; height: 900px; background-image: url(&apos;/Assets/UI Toolkit/Images/SotA_MountainPass_Cropped.jpg&apos;);">
-        <ui:VisualElement name="Title" style="position: absolute; left: 33%; align-items: center; width: 32%; height: 40px; background-image: url(&apos;/Assets/UI Toolkit/Images/MOD Manager.png&apos;); top: -1px;" />
-        <ui:VisualElement name="ContentPanel" style="left: 2.5%; top: 4.5%; right: 2.5%; align-items: center; width: 95%; height: 720px; background-color: rgba(0, 0, 0, 0.39);">
+    <ui:Template name="EmptyList" src="project://database/Assets/Resources/UI/EmptyList.uxml?fileID=9197481963319205126&amp;guid=f1ba48dd9279c60e4a57d1bf15fa49e2&amp;type=3#EmptyList" />
+    <Style src="project://database/Assets/Resources/UI/AppStyle.uss?fileID=7433441132597879392&amp;guid=77e6b7ccb1dda529fa9bd2727cc92b2d&amp;type=3#AppStyle" />
+    <ui:VisualElement name="Background" style="width: 1400px; height: 900px; background-image: url(&apos;project://database/Assets/Resources/Images/SotA_MountainPass_Cropped.jpg?fileID=2800000&amp;guid=62b332b5001059dcabc11343950aa2df&amp;type=3#SotA_MountainPass_Cropped&apos;);">
+        <ui:VisualElement name="Title" style="position: absolute; left: 33%; align-items: center; width: 32%; height: 40px; background-image: url(&apos;project://database/Assets/Resources/Images/MOD%20Manager.png?fileID=2800000&amp;guid=256d456cb29732d41a07e6ba6ca48d02&amp;type=3#MOD Manager&apos;); top: -1px;" />
+        <ui:VisualElement name="ContentPane" style="left: 2.5%; top: 4.75%; right: 2.5%; align-items: center; width: 95%; height: 80%; background-color: rgba(0, 0, 0, 0.39); background-image: none;">
             <ui:VisualElement name="Headers" style="flex-direction: row; align-items: flex-start; justify-content: center; width: 100%; height: auto; -unity-font: url(&apos;Library/unity default resources&apos;); font-size: 16px; flex-shrink: 0;">
                 <ui:Label text="Name" display-tooltip-when-elided="true" name="ColumnHeader-Name" class="column-header" style="width: 10%; -unity-text-align: middle-right;" />
                 <ui:Label text="Description" display-tooltip-when-elided="true" name="ColumnHeader-Description" class="column-header" style="width: 20%; -unity-text-align: middle-center;" />
-                <ui:Label text="Installed" display-tooltip-when-elided="true" name="ColumnHeader-installed" style="width: 15%; -unity-text-align: upper-center;" />
+                <ui:Label text="Installed" display-tooltip-when-elided="true" name="ColumnHeader-Installed" class="column-header" style="width: 15%; -unity-text-align: upper-center;" />
                 <ui:Label text="Latest" display-tooltip-when-elided="true" name="ColumnHeader-Latest" class="column-header" style="width: 15%;" />
-                <ui:Label text="Actions" display-tooltip-when-elided="true" name="ColumnHeader-ButtonsPlaceholder" style="width: 40%; -unity-text-align: upper-center;" />
+                <ui:Label text="Actions" display-tooltip-when-elided="true" name="ColumnHeader-ButtonsPlaceholder" class="column-header" style="width: 40%; -unity-text-align: upper-center;" />
             </ui:VisualElement>
-            <ui:ScrollView name="ScrollView-Content" />
+            <ui:Instance template="EmptyList" name="EmptyList" class="empty-list" style="height: 700px;" />
         </ui:VisualElement>
-        <ui:VisualElement name="ButtonBars" style="left: 2.5%; top: 10%; right: 2.5%; flex-direction: row; width: 95%; height: 30px;">
+        <ui:VisualElement name="ButtonBars" style="flex-direction: row; width: 95%; left: 2.5%; right: 2.5%; bottom: -10%;">
             <ui:VisualElement name="ButtonBar-Left" class="button-bar">
-                <ui:Button text="Available Mods" display-tooltip-when-elided="true" name="Button-AvailableMods" class="button" />
+                <ui:Button text="List Switcher" display-tooltip-when-elided="true" name="Button-ModsListSwitch" class="button" />
             </ui:VisualElement>
             <ui:VisualElement name="ButtonBar-Right" class="button-bar">
-                <ui:Button text="Start SotA" display-tooltip-when-elided="true" name="Button-StartShroud" class="button" />
                 <ui:Button text="Start Launcher" display-tooltip-when-elided="true" name="Button-StartLauncher" class="button" />
+                <ui:Button text="Start SotA" display-tooltip-when-elided="true" name="Button-StartSotA" class="button" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
