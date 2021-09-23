@@ -26,17 +26,16 @@ namespace UI
 
 		private static bool testing = true;
 
-		private bool _alreadyRefreshing;
-
+		private bool   _alreadyRefreshing;
+		private Label  _columnHeaderInstalled;
+		private Label  _columnHeaderLatest;
+		private string _dataPath;
+		private Label  _emptyList;
+		private Button _finishedInstall;
+		private string _jsonString;
 		private Button _listSwitcher;
 		private Button _startLauncher;
 		private Button _startSotA;
-		private Button _finishedInstall;
-
-		private Label _columnHeaderInstalled;
-		private Label _columnHeaderLatest;
-
-		private string _jsonString;
 
 		private Mods _listMode;
 
@@ -77,8 +76,6 @@ namespace UI
 			public string archive;
 			public bool enabled;
 		}
-
-		private static string _dataPath;
 
 		public VisualElement installedModsScrollviewContent;
 		public VisualElement modObject;
@@ -290,10 +287,11 @@ namespace UI
 
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
-			_listSwitcher = _rootVE.Q<Button>("Button-ModsListSwitch");
-			_startLauncher = _rootVE.Q<Button>("Button-StartLauncher");
-			_startSotA = _rootVE.Q<Button>("Button-StartSotA");
-			_scrollViewContent = _rootVE.Q<ScrollView>("ScrollView-Content");
+			_emptyList             = _rootVE.Q<Label>("EmptyList");
+			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
+			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
+			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
+			_scrollViewContent     = _rootVE.Q<ScrollView>("ScrollView-Content");
 
 			modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
 
@@ -310,8 +308,6 @@ namespace UI
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
 			SwitchListClicked();
-
-			Debug.Log("List Mode set!");
 		}
 
 		private void PopulateModsList(bool getDependencies = false)
@@ -328,12 +324,12 @@ namespace UI
 
 					if (installedMods.Length > 0)
 					{
-						; // TODO actually process the config file for the scrollview to use below.
+						//_emptyList.visible = true;
+						// TODO actually process the config file for the scrollview to use below.
 					}
 					else
 					{
-						var emptyList = _rootVE.Q<VisualElement>("EmptyList");
-						emptyList.visible = true;
+						_emptyList.visible = true;
 					}
 
 					break;
@@ -468,6 +464,7 @@ namespace UI
 					// WTF, Should never be set to Disabled!!
 					break;
 			}
+			//Debug.Log("List Mode set!");
 
 			PopulateModsList(true);
 		}
