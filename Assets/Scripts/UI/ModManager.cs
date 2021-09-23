@@ -1,23 +1,18 @@
 /**
- * <summary>
  * Most credit and thanks should go to @DevilCult, as this is a re-implementation of the original ShroudModManager.
  * I started re-implementing it because there were a couple of issues I wanted to fix (display of \r\n as characters instead of codes)
  * and I thought it would be a good exercise in converting a uGUI interface into a UI Toolkit one.
  *
  * @author Archer
- * </summary>
  */
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor.Build.Content;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
-using Button = UnityEngine.UIElements.Button;
 
 namespace UI
 {
@@ -41,6 +36,9 @@ namespace UI
 		private Button _startSotA;
 		private Button _finishedInstall;
 
+		private Label _columnHeaderInstalled;
+		private Label _columnHeaderLatest;
+
 		private string _jsonString;
 
 		private Mods _listMode;
@@ -55,8 +53,8 @@ namespace UI
 		[HideInInspector]
 		public Coroutine ActiveRoutine;
 
-//		[HideInInspector]
-//		public bool downloading = false;
+		[HideInInspector]
+		public bool downloading = false;
 
 		[HideInInspector]
 		public DownloadStack downloadStack;
@@ -101,12 +99,6 @@ namespace UI
 			{
 				throw new InvalidDataException("Incorrect Mode when calling CheckAvailableModList");
 			}
-
-			var columnHeaderInstalled = (Label) _rootVE.Q<Label>("ColumnHeader-Installed");
-			var columnHeaderLatest    = (Label) _rootVE.Q<Label>("ColumnHeader-Latest");
-
-			columnHeaderInstalled.text = "Current";
-			columnHeaderLatest.text    = "Newest";
 
 			ActiveRoutine = StartCoroutine(GetModList());
 		}
@@ -428,10 +420,13 @@ namespace UI
 			*/
 			Debug.Log("About to set List Mode");
 
+			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
+    		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
 			_listSwitcher = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA = _rootVE.Q<Button>("Button-StartSotA");
 			_scrollViewContent = _rootVE.Q<ScrollView>("ScrollView-Content");
+
 			modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
 
 			_startLauncher.visible = false;
@@ -572,11 +567,11 @@ namespace UI
 
 			lblName.text      = modItem.title;
 			lblDesc.text      = modItem.desc;
-			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.latest;
+			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;
 			lblLatest.text    = modItem.version;
 
-			itemIdLbl.text = System.Guid.NewGuid().ToString();
-			deleteItemBtn.clicked += () => modItemUI.RemoveFromHierarchy();
+			//itemIdLbl.text = System.Guid.NewGuid().ToString();
+			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
 
 			_scrollViewContent.Add(modItemUI);
 		}
@@ -589,10 +584,16 @@ namespace UI
 					_listMode          = Mods.Available;
 					_listSwitcher.text = "Installed Mods";
 
+					//_columnHeaderInstalled.text = "Current";
+					_columnHeaderLatest.text    = "Creator";
+
 					break;
 				case Mods.Available:
 					_listMode          = Mods.Installed;
 					_listSwitcher.text = "Available Mods";
+
+					//_columnHeaderInstalled.text = "Current";
+					_columnHeaderLatest.text    = "Newest";
 
 					break;
 				default:
