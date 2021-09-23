@@ -1,15 +1,19 @@
-/**
- * Most credit and thanks should go to @DevilCult, as this is a re-implementation of the original ShroudModManager.
- * I started re-implementing it because there were a couple of issues I wanted to fix (display of \r\n as characters instead of codes)
- * and I thought it would be a good exercise in converting a uGUI interface into a UI Toolkit one.
- *
- * @author Archer
- */
+//
+// Most credit and thanks should go to @DevilCult, for creating the original Mod Manager and shroudmods.com
+//
+// This is a re-implementation of that original ShroudModManager.
+// I started re-implementing it because there were a couple of issues I wanted to fix (display of \r\n as characters
+// instead of codes) and I thought it would be a good exercise in converting a uGUI interface into a UI Toolkit one in
+// Unity.
+//
+//@author Archer
+//
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
@@ -521,7 +525,7 @@ namespace UI
 				else
 				{
 					// TODO
-					throw new NotImplementedException();
+					throw new NotImplementedException("PopulateScrollView: Not processing Installed mods yet!");
 				}
 			}
 			else
