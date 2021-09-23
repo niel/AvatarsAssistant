@@ -16,13 +16,6 @@ using UnityEngine.UIElements;
 
 namespace UI
 {
-	public enum Mods
-    {
-        Available,
-        Disabled,
-        Installed
-    }
-
 	public class ModManager : MonoBehaviour
 	{
 		const string ModsListUrl = "https://shroudmods.com/";
@@ -344,12 +337,6 @@ namespace UI
 
 			yield return new WaitForSeconds(5);
 			_alreadyRefreshing = false;
-		}
-
-		//Settings.cfg
-		private class LauncherLocation
-		{
-			private string _filePath;
 		}
 
 		/// <summary>
