@@ -1,0 +1,5 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:VisualElement name="EmptyList" style="background-image: none; width: 95%; height: 90%; justify-content: space-around; font-size: 72px; -unity-text-align: middle-center; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); color: rgba(125, 32, 32, 255);">
+        <ui:Label text="No Mods Found" display-tooltip-when-elided="true" style="left: 2.5%; top: 10%; right: 2.5%; flex-direction: row; width: 95%; height: 30px;" />
+    </ui:VisualElement>
+</ui:UXML>

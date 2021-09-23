@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Resources/UI/AppStyle.uss?fileID=7433441132597879392&amp;guid=77e6b7ccb1dda529fa9bd2727cc92b2d&amp;type=3#AppStyle" />
+    <ui:VisualElement name="ItemContainer" class="horizontal-container" style="flex-direction: row; width: 100%;">
+        <ui:VisualElement name="TextContent" style="width: 60%; flex-direction: row; font-size: 14px;">
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Name" style="width: 26%; -unity-text-align: middle-center;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Description" style="width: 25%; -unity-text-align: middle-left;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Installed" style="width: 16%; -unity-text-align: middle-center;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Latest" style="width: 32%; -unity-text-align: middle-center;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ActionButtons" class="button-bar" style="-unity-text-align: middle-center; height: 36px; width: 40%; justify-content: center;">
+            <ui:Button text="Enable" display-tooltip-when-elided="true" name="ButtonEnableDisable" class="button-mods" />
+            <ui:Button text="Update" display-tooltip-when-elided="true" name="ButtonUpdate" class="button-mods" />
+            <ui:Button text="Remove" display-tooltip-when-elided="true" name="ButtonRemove" class="button-mods" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
