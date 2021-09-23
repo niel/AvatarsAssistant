@@ -70,7 +70,7 @@ namespace UI
 			public int log;
 			public string folder;
 			public string file;
-			public string backupArchive;
+			public string archive;
 			public bool enabled;
 		}
 

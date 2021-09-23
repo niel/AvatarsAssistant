@@ -10,7 +10,7 @@ namespace UI
 	public class ModItem : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 	{
 		[Serializable]
-		public class MODDef
+		public class ModDef
 		{
 			public int _id;
 			public int _modId;
@@ -30,7 +30,7 @@ namespace UI
 			public bool _enabled;
 		}
 
-		public MODDef moddef;
+		public ModDef moddef;
 		public GameObject button_install;
 		public GameObject button_update;
 		public GameObject button_remove;
@@ -120,7 +120,7 @@ namespace UI
 		{
 			modmanager.ReloadInstalledMods();
 
-			modmanager.panelInstall.SetActive(true);
+//			modmanager.panelInstall.SetActive(true);
 			modmanager.downloadStack = new DownloadStack();
 			if (moddef._deps.Length > 1)
 			{
@@ -263,7 +263,7 @@ namespace UI
 			_inUpdate = true;
 			//this udpate only the current mod select for update, not dependencies
 			button_update.GetComponent<Button>().interactable = false;
-			modmanager.panelInstall.SetActive(true);
+//			modmanager.panelInstall.SetActive(true);
 			completed = false;
 			doOnce = true;
 			modmanager.downloading = true;
@@ -292,7 +292,7 @@ namespace UI
 				test.log = modmanager.installedMods[x].log;
 				test.folder = modmanager.installedMods[x].folder;
 				test.file = modmanager.installedMods[x].file;
-				test.backupzip = modmanager.installedMods[x].backupArchive;
+				test.archive = modmanager.installedMods[x].archive;
 				test.enabled = modmanager.installedMods[x].enabled;
 				test.id = modmanager.installedMods[x].id;
 				newmodlist.Add(test);
