@@ -6,7 +6,7 @@
 // instead of codes) and I thought it would be a good exercise in converting a uGUI interface into a UI Toolkit one in
 // Unity.
 //
-//@author Archer
+// @author Archer
 //
 
 using System;
@@ -146,131 +146,7 @@ namespace UI
 
 		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] _installedmods, Action<bool> completed)
 		{
-			yield break;
-#if false
-			if (alreadyDownloading)
-			{
-				yield break;
-			}
-			else
-			{
-				alreadyDownloading = true;
-			}
-			UnityWebRequestAsyncOperation dling;
-			UnityWebRequest www;
-			//download everything from the dlstack, from left to right (depedencies to mod)
-			if (dlstack.deps != null)
-			{
-				for (int x = 0; x < dlstack.totalphase; x++)
-				{
-					www = UnityWebRequest.Get("https://shroudmods.com/mods/" + dlstack.deps[x]);
-					www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); //Use this if you have any problem with a certificat, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
-					dling = www.SendWebRequest();
-					dlstack.message.Add("Checking next step...");
-					while (!dling.isDone)
-					{
-						if (x == dlstack.deps.Count - 1)
-						{
-							dlstack.message[dlstack.dlphase] = "Downloading " + dlstack.deps[x] + " " + Mathf.RoundToInt(dling.progress * 100) + "%";
-						}
-						else
-						{
-							dlstack.message[dlstack.dlphase] = "Downloading dependency " + dlstack.deps[x] + " " + Mathf.RoundToInt(dling.progress * 100) + "%";
-						}
-						yield return null;
-					}
-					if (www.result == UnityWebRequest.Result.ConnectionError)
-					{
-						Debug.Log("Network Error: " + www.error + " " + www.responseCode);
-
-					}
-					else if (www.result == UnityWebRequest.Result.ProtocolError)
-					{
-						Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
-					}
-					else
-					{
-						byte[] results = www.downloadHandler.data;
-						string zipSavePath = _dataPath + @"/SavedMods/backup/";
-						string extractPath = _dataPath + @"/Lua/";
-						File.WriteAllBytes(zipSavePath + dlstack.deps[x], results);
-
-						if (x == dlstack.deps.Count - 1)
-						{
-							dlstack.message[dlstack.dlphase] = "Downloading " + dlstack.deps[x] + " 100%";
-
-							//install extract to lua folder
-							dlstack.mods[x].enabled = false;
-						}
-						else
-						{
-							dlstack.message[dlstack.dlphase] = "Downloading dependency " + dlstack.deps[x] + " 100%";
-
-							//install extract to lua folder
-							dlstack.mods[x].enabled = false;
-						}
-
-						//extract
-						using (ZipArchive archive = ZipFile.Open(zipSavePath + dlstack.deps[x], ZipArchiveMode.Update))
-						{
-							ZipArchiveExtensions.ExtractToDirectory(archive, extractPath, true);
-						}
-						dlstack.mods[x].enabled = true;
-						dlstack.message[dlstack.dlphase] = "Installing " + dlstack.deps[x];
-					}
-					dlstack.dlphase += 1;
-				}
-
-				for (int x = 0; x < _installedmods.Length; x++)
-				{
-					for (int y = 0; y < dlstack.mods.Count; y++)
-					{
-						//Debug.Log("Comparing mod id: " + _installedmods[x].id + " " + dlstack.mods[y].id);
-						if (_installedmods[x].id == dlstack.mods[y].id)
-						{
-							//remove old mod zip from backup, check if its a clean install and if yes remove file from disable or main Lua folder
-							if (File.Exists(_dataPath + @"/SavedMods/backup/" + dlstack.mods[y].url)) { File.Delete(_dataPath + @"/SavedMods/backup/" + dlstack.mods[y].url); }
-							if (File.Exists(_dataPath + @"/SavedMods/disabled/" + dlstack.mods[y].file)) { File.Delete(_dataPath + @"/SavedMods/disabled/" + dlstack.mods[y].file); }
-							if (dlstack.mods[y].clean == 1)
-							{
-								if (File.Exists(_dataPath + @"/Lua/" + dlstack.mods[y].file)) { File.Delete(_dataPath + @"/Lua/" + dlstack.mods[y].file); }
-								if (Directory.Exists(_dataPath + @"/Lua/" + dlstack.mods[y].folder)) { Directory.Delete(_dataPath + @"/Lua/" + dlstack.mods[y].folder, true); }
-							}
-							dlstack.mods.Remove(dlstack.mods[y]);
-						}
-					}
-
-					Mod test = new Mod();
-					test.creator = _installedmods[x].creator;
-					test.title = _installedmods[x].title;
-					test.desc = _installedmods[x].desc;
-					test.version = _installedmods[x].version;
-					test.deps = _installedmods[x].deps;
-					test.isdep = _installedmods[x].isdep;
-					test.icon = _installedmods[x].icon;
-					test.log = _installedmods[x].log;
-					test.folder = _installedmods[x].folder;
-					test.file = _installedmods[x].file;
-					test.backupzip = _installedmods[x].backupzip;
-					test.enabled = _installedmods[x].enabled;
-					test.id = _installedmods[x].id;
-					dlstack.mods.Add(test);
-				}
-				//Debug.Log(dlstack.deps[0]);
-				Mod[] myArray = dlstack.mods.ToArray();
-				File.WriteAllText(_dataPath + @"/SavedMods/InstalledMods.cfg", JsonHelper.ToJson(myArray));
-				//fully complete, write it down the cfg file
-				dlstack.message.Add("Your mod has been installed!");
-			}
-			else
-			{
-				dlstack.message.Add("ERROR: The download stack is empty. Something weird happened.");
-
-			}
-
-			completed.Invoke(true);
-			alreadyDownloading = false;
-#endif
+			throw new NotImplementedException("GetModZip");
 		}
 
 		private IEnumerator GetModList()
@@ -426,7 +302,7 @@ namespace UI
 
 			_listSwitcher.RegisterCallback<ClickEvent>(ev => SwitchListClicked());
 
-			/* TODO add detection code for location of Launcher/SotA Binary. Enable buttons an callbacks if found.
+			/* TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
 			m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
 			m_StartSotA.RegisterCallback<ClickEvent>(ev => StartSotAClicked());
 			*/
