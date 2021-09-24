@@ -1,5 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:Template name="EmptyList" src="project://database/Assets/Resources/UI/EmptyList.uxml?fileID=9197481963319205126&amp;guid=f1ba48dd9279c60e4a57d1bf15fa49e2&amp;type=3#EmptyList" />
     <Style src="project://database/Assets/Resources/UI/AppStyle.uss?fileID=7433441132597879392&amp;guid=77e6b7ccb1dda529fa9bd2727cc92b2d&amp;type=3#AppStyle" />
     <ui:VisualElement name="Background" style="width: 1400px; height: 900px; background-image: url(&apos;project://database/Assets/Resources/Images/SotA_MountainPass_Cropped.jpg?fileID=2800000&amp;guid=62b332b5001059dcabc11343950aa2df&amp;type=3#SotA_MountainPass_Cropped&apos;);">
         <ui:VisualElement name="Title" style="position: absolute; left: 33%; align-items: center; width: 32%; height: 40px; background-image: url(&apos;project://database/Assets/Resources/Images/MOD%20Manager.png?fileID=2800000&amp;guid=256d456cb29732d41a07e6ba6ca48d02&amp;type=3#MOD Manager&apos;); top: -1px;" />
@@ -11,7 +10,9 @@
                 <ui:Label text="Latest" display-tooltip-when-elided="true" name="ColumnHeader-Latest" class="column-header" style="width: 15%;" />
                 <ui:Label text="Actions" display-tooltip-when-elided="true" name="ColumnHeader-ButtonsPlaceholder" class="column-header" style="width: 40%; -unity-text-align: upper-center;" />
             </ui:VisualElement>
-            <ui:Instance template="EmptyList" name="EmptyList" class="empty-list" style="height: 700px;" />
+			<ui:VisualElement name="EmptyListContainer" style="background-image: none; width: 95%; height: 90%; justify-content: space-around; font-size: 72px; -unity-text-align: middle-center; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); color: rgba(125, 32, 32, 255);">
+				<ui:Label name="EmptyList" text="No Mods Found" display-tooltip-when-elided="true" style="left: 2.5%; top: 10%; right: 2.5%; flex-direction: row; width: 95%; height: 30px;" />
+			</ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="ButtonBars" style="flex-direction: row; width: 95%; left: 2.5%; right: 2.5%; bottom: -10%;">
             <ui:VisualElement name="ButtonBar-Left" class="button-bar">

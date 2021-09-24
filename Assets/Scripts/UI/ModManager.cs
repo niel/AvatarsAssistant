@@ -295,15 +295,15 @@ namespace UI
 
 			modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
 
+			//_emptyList.visible     = false;
 			_startLauncher.visible = false;
-			_startSotA.visible = false;
+			_startSotA.visible     = false;
 
 			_listSwitcher.RegisterCallback<ClickEvent>(ev => SwitchListClicked());
 
-			/* TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
-			m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
-			m_StartSotA.RegisterCallback<ClickEvent>(ev => StartSotAClicked());
-			*/
+			// TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
+			//m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
+			//m_StartSotA.RegisterCallback<ClickEvent>(ev => StartSotAClicked());
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
@@ -329,6 +329,7 @@ namespace UI
 					}
 					else
 					{
+						Debug.Log("_emptyList.visible: " + _emptyList);
 						_emptyList.visible = true;
 					}
 
