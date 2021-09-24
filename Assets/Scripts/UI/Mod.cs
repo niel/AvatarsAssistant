@@ -7,10 +7,10 @@ namespace UI
 	public class Mod
 	{
 		public int    id;
-		public string creator = null;
+		public string creator;
 		public string title;
-		public string version;
 		public string desc;
+		public string version;
 		public string url;
 		public string deps;
 		public bool   isdep;
@@ -19,7 +19,7 @@ namespace UI
 		public int    clean;
 		public string folder;
 		public string file;
-		public string archive;
+		public string backupzip;
 		public bool   enabled;
 	}
 }
