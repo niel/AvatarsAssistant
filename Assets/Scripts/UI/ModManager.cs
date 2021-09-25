@@ -62,19 +62,19 @@ namespace UI
 		[Serializable]
 		public struct InstalledMod
 		{
-			public int id;
+			public int    id;
 			public string creator;
 			public string title;
 			public string desc;
 			public string version;
 			public string deps;
-			public bool isDep;
-			public int icon;
-			public int log;
+			public bool   isDep;
+			public int    icon;
+			public int    log;
 			public string folder;
 			public string file;
-			public string archive;
-			public bool enabled;
+			public string backupzip;
+			public bool   enabled;
 		}
 
 		public VisualElement installedModsScrollviewContent;
@@ -94,6 +94,7 @@ namespace UI
 				throw new InvalidDataException("Incorrect Mode when calling CheckAvailableModList");
 			}
 
+			Debug.Log("Fetching list of mods from shroudmods.com.");
 			ActiveRoutine = StartCoroutine(GetModList());
 		}
 
@@ -109,13 +110,42 @@ namespace UI
 			// If there are none the ScrollView has a background showing 'No Mods Found' as a temporary measure.
 			if (configText.Length > 0)
 			{
-//				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
-//				PopulateModList(true, false);
+				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
+				Debug.Log("CheckInstalledMods - count: " + installedMods.Length);
 			}
 			else // If the file is less than 1, there are no mods found! So we set the scrollview to use the 'No Mods Found' background image.
 			{
 				// background mage defaults to 'No Mods Found' image. If there are Mods found, listing them covers the image - works for now!
+				Debug.Log("No Configuration in file.");
+			}
+		}
 
+		public void CheckScrollViewContentList(Array mods)
+		{
+			if (mods.Length > 0)
+			{ // Regardless of what the list represents, it has entries so the ScrollView must be prepared.
+				var AppWindow = _rootVE.Q<VisualElement>("Background");
+
+				if (AppWindow.Q<ScrollView>("ScrollView-Container") == null)
+				{
+					Debug.Log("No scrollview-container, trying to create it.");
+
+					var ListContainer = AppWindow.Q<VisualElement>("ListContainer");
+					var EmptyList     = AppWindow.Q<VisualElement>("EmptyList");
+					if (EmptyList != null)
+					{
+						//ListContainer.Remove(EmptyList);
+						EmptyList.visible = false;
+					}
+					else
+					{ // Really! How did the empty list text get removed without ScrollView being created?
+						Debug.Log("Really! How did the empty list text get removed without ScrollView being created?");
+					}
+
+					ListContainer.Add(new ScrollViewContent());
+					_scrollViewContent = ListContainer.Q<ScrollView>("ScrollView-Container");
+					Debug.Log("ScrollView added");
+				}
 			}
 		}
 
@@ -127,7 +157,7 @@ namespace UI
 			}
 
 			_listedModInstance.Clear();
-			//Debug.Log(listedModInstance.Count);
+			Debug.Log("_listedModInstance count: " + _listedModInstance.Count);
 		}
 
 		private void DownLoadModList()
@@ -146,7 +176,7 @@ namespace UI
 			throw new NotImplementedException("GetModZip");
 		}
 
-		private IEnumerator GetModList()
+		private IEnumerator GetModList(bool getDependencies = false)
 		{
 			if (_alreadyRefreshing)
 			{
@@ -176,9 +206,10 @@ namespace UI
 					break;
 				default:
 					_jsonString = fixJson(www.downloadHandler.text);
-					Debug.Log(_jsonString);
+					Debug.Log("Mods: " + _jsonString);
 
 					mods = JsonHelper.FromJson<Mod>(_jsonString);
+					Debug.Log("Mods[]: " + mods.Length);
 					PopulateModsList(false);
 
 					break;
@@ -201,12 +232,13 @@ namespace UI
 					break;
 				default:
 					_jsonString = fixJson(www.downloadHandler.text);
-					Debug.Log(_jsonString);
+					Debug.Log("Deps: " + _jsonString);
 
 					if (_jsonString != null)
 					{
 						deps = JsonHelper.FromJson<Mod>(@_jsonString);
-						PopulateModsList(true);
+						Debug.Log("Deps[]: " + deps.Length);
+						//PopulateModsList(getDependencies);
 					}
 
 					break;
@@ -329,7 +361,7 @@ namespace UI
 					}
 					else
 					{
-						Debug.Log("_emptyList.visible: " + _emptyList);
+						//Debug.Log("_emptyList.visible: " + _emptyList);
 						_emptyList.visible = true;
 					}
 
@@ -350,24 +382,27 @@ namespace UI
 
 		private void PopulateScrollView(bool getDependencies)
 		{
-			if (mods.Length > 0)
+			switch (_listMode)
 			{
-				if (_listMode == Mods.Available)
+				case Mods.Available when getDependencies:
 				{
-					Debug.Log("Populating list of mods from shroudmods.com.");
-					if (getDependencies)
+					if (deps.Length > 0)
 					{
-						if (deps.Length > 0)
-						{
-							// TODO
-							throw new NotImplementedException();
-						}
-
-						return;
+						Debug.Log("Processing Dependencies!");
+						// TODO
+						CheckScrollViewContentList(deps);
+						throw new NotImplementedException();
 					}
 
+					return;
+				}
+				case Mods.Available:
+				{
 					if (mods.Length > 0)
 					{
+						Debug.Log("Processing Available Mods!");
+						CheckScrollViewContentList(mods);
+
 						for (int i = 0; i < mods.Length; i++)
 						{
 							bool found = false;
@@ -386,24 +421,39 @@ namespace UI
 								}
 							}
 
-							if (found)
+							if (!found)
 							{
-								continue;
+								;
 							}
 
+							Debug.Log("PopulateScrollView: Adding new item...");
 							ScrollViewAddItem(mods[i]);
 						}
 					}
+
+					break;
 				}
-				else
-				{
+				case Mods.Installed:
+					Debug.Log("Processing Installed Mods!");
+					CheckScrollViewContentList(installedMods);
 					// TODO
-					throw new NotImplementedException("PopulateScrollView: Not processing Installed mods yet!");
-				}
+					//throw new NotImplementedException("PopulateScrollView: Not processing Installed mods yet!");
+					break;
+				default:
+					;
+
+					break;
 			}
-			else
+		}
+
+		public void PrintModsList()
+		{
+			if (mods.Length > 0)
 			{
-				;
+				foreach (Mod moditem in mods)
+				{
+					Debug.Log("Name: " + moditem.title + "\n");
+				}
 			}
 		}
 
@@ -420,6 +470,8 @@ namespace UI
 
 		private void ScrollViewAddItem(Mod modItem)
 		{
+			Debug.Log("ScrollViewAddItem: called");
+/*
 			var modItemUI = modItemTemplate.Instantiate();
 
 			var lblName          = modItemUI.Q<Label>("Name");
@@ -427,18 +479,22 @@ namespace UI
 			var lblInstalled     = modItemUI.Q<Label>("Installed");
 			var lblLatest        = modItemUI.Q<Label>("Latest");
 			var btnEnableDisable = modItemUI.Q<Button>("ButtonEnableDisable");
-			var btnUpdate        = modItemUI.Q<Button>("");
-			var btnRemove        = modItemUI.Q<Button>("");
+			var btnUpdate        = modItemUI.Q<Button>("ButtonUpdate");
+			var btnRemove        = modItemUI.Q<Button>("ButtonRemove");
 
 			lblName.text      = modItem.title;
 			lblDesc.text      = modItem.desc;
-			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;
-			lblLatest.text    = modItem.version;
+			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;  // Installed version or creator
+			lblLatest.text    = _listMode == Mods.Available ? modItem.version : "somehow get latest";  // Newest
+*/
+			var modItemUI = new ModEntry(modItem);
 
-			//itemIdLbl.text = System.Guid.NewGuid().ToString();
+			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
 			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
 
+			Debug.Log("_scrollViewContent: " + _scrollViewContent.childCount);
 			_scrollViewContent.Add(modItemUI);
+			Debug.Log("ScrollViewAddItem: Added " + modItem.title);
 		}
 
 		private void SwitchListClicked()
@@ -467,7 +523,7 @@ namespace UI
 			}
 			//Debug.Log("List Mode set!");
 
-			PopulateModsList(true);
+			PopulateModsList(false);
 		}
 
 		private void StartLauncherClicked()
