@@ -42,7 +42,7 @@ namespace UI
 		public Mod[] deps;
 		public Mod[] mods;
 
-		private ScrollView _scrollViewContent;
+		private ScrollView _listViewContent;
 
 		public VisualTreeAsset modItemTemplate;
 
@@ -88,15 +88,14 @@ namespace UI
 			ClearModList();
 
 			// If there any mods found, we populate the list with them.
-			// If there are none the ScrollView has a background showing 'No Mods Found' as a temporary measure.
 			if (configText.Length > 0)
 			{
 				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
 				Debug.Log("CheckInstalledMods - count: " + installedMods.Length);
 			}
-			else // If the file is less than 1, there are no mods found! So we set the scrollview to use the 'No Mods Found' background image.
+			else // If the file is less than 1, there are no mods found!
 			{
-				// background mage defaults to 'No Mods Found' image. If there are Mods found, listing them covers the image - works for now!
+				// TODO
 				Debug.Log("No Configuration in file.");
 			}
 		}
@@ -124,7 +123,7 @@ namespace UI
 					}
 
 					ListContainer.Add(new ScrollViewContent());
-					_scrollViewContent = ListContainer.Q<ScrollView>("ScrollView-Container");
+					_listViewContent = ListContainer.Q<ScrollView>("ScrollView-Container");
 					Debug.Log("ScrollView added");
 				}
 			}
@@ -246,6 +245,7 @@ namespace UI
 									   : @"/Portalarium/Shroud of the Avatar/";
 			string baseAppInstallLocation;
 
+			#region Configure files and paths.
 			switch (Application.platform)
 			{
 				case RuntimePlatform.WindowsPlayer:
@@ -276,7 +276,9 @@ namespace UI
 			{
 				Directory.CreateDirectory(_dataPath + @"SavedMods/disabled");
 			}
+			#endregion
 
+			/*
 			// Check if our settings file exists. if not, create it (this only saves the location of the launcher)
 			if (!File.Exists(_dataPath + @"SavedMods/Settings.cfg"))
 			{
@@ -287,6 +289,7 @@ namespace UI
 			{
 				JsonUtility.FromJson<LauncherLocation>(File.ReadAllText(_dataPath + @"SavedMods/Settings.cfg"));
 			}
+			*/
 
 			//Debug.Log("Checking existence of file: " + _dataPath + @"SavedMods/InstalledMods.cfg");
 			// Check if the installed mods config file is there, if not we create it.
@@ -296,12 +299,6 @@ namespace UI
 				File.CreateText(_dataPath + @"SavedMods/InstalledMods.cfg");
 				//listedModInstance.Add((GameObject)Instantiate(NoModFound, installedModsScrollviewContent.transform));
 			}
-			else // if the file exists we check if there are any installed mods.
-			{
-				//Debug.Log("Checking for installed mods!");
-				CheckInstalledMods();
-			}
-			//Debug.Log("About to set List Mode");
 
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
@@ -309,7 +306,7 @@ namespace UI
 			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
-			_scrollViewContent     = _rootVE.Q<ScrollView>("ScrollView-Content");
+			_listViewContent       = _rootVE.Q<ScrollView>("ScrollView-Content");
 
 			modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
 
@@ -326,44 +323,6 @@ namespace UI
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
 			SwitchListClicked();
-		}
-
-		private void PopulateModsList(bool getDependencies = false)
-		{
-			_rootVE = GetComponent<UIDocument>().rootVisualElement;
-
-			// First we have to get our list of Mods. How we do that depends on the list we are interested in.
-			switch (_listMode)
-			{
-				case Mods.Installed:
-				{
-					// TODO set the column headers for current/installed to Installed/Latest
-					CheckInstalledMods();
-
-					if (installedMods.Length > 0)
-					{
-						//_emptyList.visible = true;
-						// TODO actually process the config file for the scrollview to use below.
-					}
-					else
-					{
-						//Debug.Log("_emptyList.visible: " + _emptyList);
-						_emptyList.visible = true;
-					}
-
-					break;
-				}
-				case Mods.Available:
-					// TODO Set the column headers for current/installed to Latest/Creator
-					CheckAvailableModList();
-
-					break;
-				default:
-					throw new ArgumentException("Attempt to populate list from incorrect mode!");
-					break;
-			}
-
-			PopulateListView(getDependencies);
 		}
 
 		private void PopulateListView(bool getDependencies)
@@ -446,6 +405,44 @@ namespace UI
 			}
 		}
 
+		public void PopulateModsList(bool getDependencies = false)
+		{
+			_rootVE = GetComponent<UIDocument>().rootVisualElement;
+
+			// First we have to get our list of Mods. How we do that depends on the list we are interested in.
+			switch (_listMode)
+			{
+				case Mods.Installed:
+				{
+					// TODO set the column headers for current/installed to Installed/Latest
+					CheckInstalledMods();
+
+					if (installedMods.Length > 0)
+					{
+						//_emptyList.visible = true;
+						// TODO actually process the config file for the scrollview to use below.
+					}
+					else
+					{
+						//Debug.Log("_emptyList.visible: " + _emptyList);
+						_emptyList.visible = true;
+					}
+
+					break;
+				}
+				case Mods.Available:
+					// TODO Set the column headers for current/installed to Latest/Creator
+					CheckAvailableModList();
+
+					break;
+				default:
+					throw new ArgumentException("Attempt to populate list from incorrect mode!");
+					break;
+			}
+
+			PopulateListView(getDependencies);
+		}
+
 		public void PrintModsList()
 		{
 			if (mods.Length > 0)
@@ -492,9 +489,9 @@ namespace UI
 			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
 			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
 
-			_scrollViewContent.Add(modItemUI);
+			_listViewContent.Add(modItemUI);
 			Debug.Log("ScrollViewAddItem: Added " + modItem.title);
-			Debug.Log("_scrollViewContent: " + _scrollViewContent.childCount);
+			Debug.Log("_scrollViewContent: " + _listViewContent.childCount);
 		}
 
 		private void SwitchListClicked()
@@ -521,7 +518,6 @@ namespace UI
 					// WTF, Should never be set to Disabled!!
 					break;
 			}
-			//Debug.Log("List Mode set!");
 
 			PopulateModsList(false);
 		}

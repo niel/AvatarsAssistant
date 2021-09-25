@@ -190,7 +190,7 @@ namespace UI
 					if (doOnce)
 					{
 						doOnce = false;
-						modmanager.CheckInstalledMods();
+						modmanager.PopulateModsList();
 					}
 				}
 			}
@@ -282,19 +282,19 @@ namespace UI
 			{
 				if (moddef._title == modmanager.installedMods[x].title) { continue; }
 				Mod test = new Mod();
-				test.creator = modmanager.installedMods[x].creator;
-				test.title = modmanager.installedMods[x].title;
-				test.desc = modmanager.installedMods[x].desc;
-				test.version = modmanager.installedMods[x].version;
-				test.deps = modmanager.installedMods[x].deps;
-				test.isdep = modmanager.installedMods[x].isDep;
-				test.icon = modmanager.installedMods[x].icon;
-				test.log = modmanager.installedMods[x].log;
-				test.folder = modmanager.installedMods[x].folder;
-				test.file = modmanager.installedMods[x].file;
-				test.archive = modmanager.installedMods[x].archive;
-				test.enabled = modmanager.installedMods[x].enabled;
-				test.id = modmanager.installedMods[x].id;
+				test.creator   = modmanager.installedMods[x].creator;
+				test.title     = modmanager.installedMods[x].title;
+				test.desc      = modmanager.installedMods[x].desc;
+				test.version   = modmanager.installedMods[x].version;
+				test.deps      = modmanager.installedMods[x].deps;
+				test.isdep     = modmanager.installedMods[x].isdep;
+				test.icon      = modmanager.installedMods[x].icon;
+				test.log       = modmanager.installedMods[x].log;
+				test.folder    = modmanager.installedMods[x].folder;
+				test.file      = modmanager.installedMods[x].file;
+				test.backupzip = modmanager.installedMods[x].backupzip;
+				test.enabled   = modmanager.installedMods[x].enabled;
+				test.id        = modmanager.installedMods[x].id;
 				newmodlist.Add(test);
 			}
 			Mod[] myArray = newmodlist.ToArray();
@@ -302,7 +302,7 @@ namespace UI
 			File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"/Portalarium/Shroud of the Avatar/SavedMods/InstalledMods.cfg", JsonHelper.ToJson(myArray));
 			//modmanager.SaveInstalledMods();
 			//downloadStack.mods.Remove(downloadStack.mods[y]);
-			modmanager.CheckInstalledMods();
+			modmanager.PopulateModsList();
 			Destroy(this.gameObject);
 		}
 
