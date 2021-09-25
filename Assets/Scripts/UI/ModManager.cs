@@ -58,25 +58,6 @@ namespace UI
 		// ReSharper disable once InconsistentNaming
 		private VisualElement _rootVE;
 
-		// InstalledMods.cfg
-		[Serializable]
-		public struct InstalledMod
-		{
-			public int    id;
-			public string creator;
-			public string title;
-			public string desc;
-			public string version;
-			public string deps;
-			public bool   isDep;
-			public int    icon;
-			public int    log;
-			public string folder;
-			public string file;
-			public string backupzip;
-			public bool   enabled;
-		}
-
 		public VisualElement installedModsScrollviewContent;
 		public VisualElement modObject;
 		public VisualElement noModFound;
@@ -95,7 +76,7 @@ namespace UI
 			}
 
 			Debug.Log("Fetching list of mods from shroudmods.com.");
-			ActiveRoutine = StartCoroutine(GetModList());
+			ActiveRoutine = StartCoroutine(FetchModList());
 		}
 
 		public void CheckInstalledMods()
@@ -128,7 +109,7 @@ namespace UI
 
 				if (AppWindow.Q<ScrollView>("ScrollView-Container") == null)
 				{
-					Debug.Log("No scrollview-container, trying to create it.");
+					//Debug.Log("No scrollview-container, trying to create it.");
 
 					var ListContainer = AppWindow.Q<VisualElement>("ListContainer");
 					var EmptyList     = AppWindow.Q<VisualElement>("EmptyList");
@@ -171,12 +152,7 @@ namespace UI
 			return value;
 		}
 
-		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] _installedmods, Action<bool> completed)
-		{
-			throw new NotImplementedException("GetModZip");
-		}
-
-		private IEnumerator GetModList(bool getDependencies = false)
+		private IEnumerator FetchModList(bool getDependencies = false)
 		{
 			if (_alreadyRefreshing)
 			{
@@ -248,6 +224,16 @@ namespace UI
 			_alreadyRefreshing = false;
 		}
 
+		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] _installedmods, Action<bool> completed)
+		{
+			throw new NotImplementedException("GetModZip");
+		}
+
+		private void ListViewAddItem(InstalledMod moditem)
+		{
+			throw new NotImplementedException();
+		}
+
 		/// <summary>
 		/// OnEnable is called when the object becomes enabled and active.
 		/// </summary>
@@ -313,7 +299,7 @@ namespace UI
 			else // if the file exists we check if there are any installed mods.
 			{
 				//Debug.Log("Checking for installed mods!");
-				//CheckInstalledMods();
+				CheckInstalledMods();
 			}
 			//Debug.Log("About to set List Mode");
 
@@ -377,10 +363,10 @@ namespace UI
 					break;
 			}
 
-			PopulateScrollView(getDependencies);
+			PopulateListView(getDependencies);
 		}
 
-		private void PopulateScrollView(bool getDependencies)
+		private void PopulateListView(bool getDependencies)
 		{
 			switch (_listMode)
 			{
@@ -388,9 +374,9 @@ namespace UI
 				{
 					if (deps.Length > 0)
 					{
-						Debug.Log("Processing Dependencies!");
+						Debug.Log("Populating Dependencies!");
 						// TODO
-						CheckScrollViewContentList(deps);
+						//CheckScrollViewContentList(deps);
 						throw new NotImplementedException();
 					}
 
@@ -400,8 +386,8 @@ namespace UI
 				{
 					if (mods.Length > 0)
 					{
-						Debug.Log("Processing Available Mods!");
-						CheckScrollViewContentList(mods);
+						Debug.Log("Populating Available Mods!");
+						//CheckScrollViewContentList(mods);
 
 						for (int i = 0; i < mods.Length; i++)
 						{
@@ -434,11 +420,25 @@ namespace UI
 					break;
 				}
 				case Mods.Installed:
-					Debug.Log("Processing Installed Mods!");
-					CheckScrollViewContentList(installedMods);
-					// TODO
-					//throw new NotImplementedException("PopulateScrollView: Not processing Installed mods yet!");
+				{
+					if (installedMods.Length > 0)
+					{
+						Debug.Log("Populating Installed Mods!");
+						//CheckScrollViewContentList(installedMods); // Create ScrollView-Container if it doesn't exist yet.
+
+						foreach (InstalledMod moditem in installedMods)
+						{
+							ListViewAddItem(moditem);
+						}
+					}
+					else
+					{
+						// TODO
+						throw new NotImplementedException("PopulateScrollView: Not processing zero installed mods yet!");
+
+					}
 					break;
+				}
 				default:
 					;
 
@@ -470,7 +470,7 @@ namespace UI
 
 		private void ScrollViewAddItem(Mod modItem)
 		{
-			Debug.Log("ScrollViewAddItem: called");
+			//Debug.Log("ScrollViewAddItem: entered");
 /*
 			var modItemUI = modItemTemplate.Instantiate();
 
@@ -492,9 +492,9 @@ namespace UI
 			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
 			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
 
-			Debug.Log("_scrollViewContent: " + _scrollViewContent.childCount);
 			_scrollViewContent.Add(modItemUI);
 			Debug.Log("ScrollViewAddItem: Added " + modItem.title);
+			Debug.Log("_scrollViewContent: " + _scrollViewContent.childCount);
 		}
 
 		private void SwitchListClicked()
