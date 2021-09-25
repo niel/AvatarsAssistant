@@ -6,7 +6,8 @@ namespace UI
 	{
 		public ScrollViewContent()
 		{
-			AddToClassList("ScrollView");
+			name = "ScrollView-Container";
+			AddToClassList("scrollview");
 		}
 	}
 }
