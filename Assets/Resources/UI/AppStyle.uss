@@ -129,3 +129,12 @@
     font-size: 72px;
     -unity-text-align: middle-center;
 }
+
+.scrollview {
+    left: 2.5%;
+    top: 10%;
+    right: 2.5%;
+    flex-direction: row;
+    width: 95%;
+    height: 715px;
+}
