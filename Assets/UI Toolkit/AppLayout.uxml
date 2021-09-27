@@ -5,17 +5,17 @@
         <ui:VisualElement name="ContentPane" style="left: 2.5%; top: 4.75%; right: 2.5%; align-items: center; width: 95%; height: 80%; background-color: rgba(0, 0, 0, 0.39); background-image: none;">
             <ui:VisualElement name="Headers" style="flex-direction: row; align-items: flex-start; justify-content: center; width: 100%; height: auto; -unity-font: url(&apos;Library/unity default resources&apos;); font-size: 16px; flex-shrink: 0;">
                 <ui:Label text="Name" display-tooltip-when-elided="true" name="ColumnHeader-Name" tooltip="Name of the mod" class="column-header" style="width: 10%; -unity-text-align: middle-right;" />
-                <ui:Label text="Description" display-tooltip-when-elided="true" name="ColumnHeader-Description" tooltip="Description of the mod" class="column-header" style="width: 20%; -unity-text-align: middle-center;" />
-                <ui:Label text="Installed" display-tooltip-when-elided="true" name="ColumnHeader-Installed" tooltip="The version installed" class="column-header" style="width: 15%; -unity-text-align: upper-center;" />
-                <ui:Label text="Latest" display-tooltip-when-elided="true" name="ColumnHeader-Latest" tooltip="The most up to date version on the site" class="column-header" style="width: 15%;" />
+                <ui:Label text="Description" display-tooltip-when-elided="true" name="ColumnHeader-Description" tooltip="Description of the mod" class="column-header" style="width: 30%; -unity-text-align: middle-center;" />
+                <ui:Label text="Installed" display-tooltip-when-elided="true" name="ColumnHeader-Installed" tooltip="The version installed" class="column-header" style="width: 10%; -unity-text-align: upper-center;" />
+                <ui:Label text="Latest" display-tooltip-when-elided="true" name="ColumnHeader-Latest" tooltip="The most up to date version on the site" class="column-header" style="width: 10%;" />
                 <ui:Label text="Actions" display-tooltip-when-elided="true" name="ColumnHeader-ButtonsPlaceholder" tooltip="Buttons to perform actions" class="column-header" style="width: 40%; -unity-text-align: upper-center;" />
             </ui:VisualElement>
-            <ui:VisualElement name="ListContainer" tooltip="List area" style="background-image: none; width: 95%; height: 90%; justify-content: space-around; font-size: 72px; -unity-text-align: middle-center; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); color: rgb(125, 32, 32);">
-                <ui:ListView focusable="true" name="ListView-Content" tooltip="List of mods" class="listlview" />
+            <ui:VisualElement name="ListContainer" tooltip="List area" style="background-image: none; width: 95%; height: 95%; font-size: 72px; -unity-text-align: middle-center; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); color: rgb(125, 32, 32); border-left-width: 3px; border-right-width: 3px; border-top-width: 3px; border-bottom-width: 3px;">
+                <ui:ListView focusable="true" name="ListView-Content" tooltip="List of mods" virtualization-method="DynamicHeight" show-border="false" binding-path="ModsList" selection-type="None" show-alternating-row-backgrounds="ContentOnly" class="listview" style="left: auto; top: 0; right: auto; width: 100%; height: 100%; -unity-text-align: upper-center; position: absolute;" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="ButtonBars" style="flex-direction: row; width: 95%; left: 2.5%; right: 2.5%; bottom: -10%;">
-            <ui:VisualElement name="ButtonBar-Left" class="button-bar">
+        <ui:VisualElement name="ButtonBars" style="flex-direction: row; width: 95%; left: 2.5%; right: 2.5%; bottom: -10%; height: 32px;">
+            <ui:VisualElement name="ButtonBar-Left" class="button-bar" style="height: auto;">
                 <ui:Button text="List Switcher" display-tooltip-when-elided="true" name="Button-ModsListSwitch" tooltip="Switch between Installed and Available lists" class="button" />
             </ui:VisualElement>
             <ui:VisualElement name="ButtonBar-Right" class="button-bar">
