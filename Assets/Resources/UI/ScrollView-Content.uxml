@@ -1,3 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:ScrollView name="ScrollView-Content" style="left: 2.5%; top: 10%; right: 2.5%; flex-direction: row; width: 95%; height: 30px; display: flex; visibility: hidden;" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Resources/UI/AppStyle.uss?fileID=7433441132597879392&amp;guid=77e6b7ccb1dda529fa9bd2727cc92b2d&amp;type=3#AppStyle" />
+    <ui:ScrollView name="ScrollView-Content" class="scrollview dummy" />
 </ui:UXML>

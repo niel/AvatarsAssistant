@@ -1,5 +1,5 @@
 //
-// Most credit and thanks should go to @DevilCult, for creating the original Mod Manager and shroudmods.com
+// Credit and thanks go to @DevilCult, for creating the original Mod Manager and shroudmods.com
 //
 // This is a re-implementation of that original ShroudModManager.
 // I started re-implementing it because there were a couple of issues I wanted to fix (display of \r\n as characters
@@ -41,8 +41,9 @@ namespace UI
 
 		public Mod[] deps;
 		public Mod[] mods;
+		public List<Mod> modsList; // List bound to ListView for displaying the others (installedModsList, mods, deps, etc.).
 
-		private ScrollView _listViewContent;
+		private ListView _listViewContent;
 
 		public VisualTreeAsset modItemTemplate;
 
@@ -91,7 +92,13 @@ namespace UI
 			if (configText.Length > 0)
 			{
 				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
-				Debug.Log("CheckInstalledMods - count: " + installedMods.Length);
+				var count = installedMods.Length;
+				Debug.Log("CheckInstalledMods - count: " + count);
+
+				modsList.Clear();
+				modsList.AddRange(installedMods);
+				modsList.Sort();
+				Debug.Log("CheckInstalledMods - modsList: " + modsList.Count);
 			}
 			else // If the file is less than 1, there are no mods found!
 			{
@@ -108,8 +115,6 @@ namespace UI
 
 				if (AppWindow.Q<ScrollView>("ScrollView-Container") == null)
 				{
-					//Debug.Log("No scrollview-container, trying to create it.");
-
 					var ListContainer = AppWindow.Q<VisualElement>("ListContainer");
 					var EmptyList     = AppWindow.Q<VisualElement>("EmptyList");
 					if (EmptyList != null)
@@ -123,7 +128,7 @@ namespace UI
 					}
 
 					ListContainer.Add(new ScrollViewContent());
-					_listViewContent = ListContainer.Q<ScrollView>("ScrollView-Container");
+					_listViewContent = ListContainer.Q<ListView>("ScrollView-Container");
 					Debug.Log("ScrollView added");
 				}
 			}
@@ -137,7 +142,7 @@ namespace UI
 			}
 
 			_listedModInstance.Clear();
-			Debug.Log("_listedModInstance count: " + _listedModInstance.Count);
+			Debug.Log("ClearModList: _listedModInstance count: " + _listedModInstance.Count);
 		}
 
 		private void DownLoadModList()
@@ -239,13 +244,14 @@ namespace UI
 		private void OnEnable()
 		{
 			_rootVE = GetComponent<UIDocument>().rootVisualElement;
+			Debug.Log("rooVE count: " +_rootVE.childCount);
 
+			#region Configure files and paths.
 			string sotaDirectory = testing
 									   ? @"/Portalarium/Shroud of the Avatar(QA)/"
 									   : @"/Portalarium/Shroud of the Avatar/";
 			string baseAppInstallLocation;
 
-			#region Configure files and paths.
 			switch (Application.platform)
 			{
 				case RuntimePlatform.WindowsPlayer:
@@ -276,7 +282,6 @@ namespace UI
 			{
 				Directory.CreateDirectory(_dataPath + @"SavedMods/disabled");
 			}
-			#endregion
 
 			/*
 			// Check if our settings file exists. if not, create it (this only saves the location of the launcher)
@@ -291,26 +296,22 @@ namespace UI
 			}
 			*/
 
-			//Debug.Log("Checking existence of file: " + _dataPath + @"SavedMods/InstalledMods.cfg");
 			// Check if the installed mods config file is there, if not we create it.
 			if (!File.Exists(_dataPath + @"SavedMods/InstalledMods.cfg"))
 			{
-				//Debug.Log("Creating InstalledMods file!");
 				File.CreateText(_dataPath + @"SavedMods/InstalledMods.cfg");
-				//listedModInstance.Add((GameObject)Instantiate(NoModFound, installedModsScrollviewContent.transform));
 			}
+			#endregion
 
+			#region Initialise elements for easy access.
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
 			_emptyList             = _rootVE.Q<Label>("EmptyList");
 			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
-			_listViewContent       = _rootVE.Q<ScrollView>("ScrollView-Content");
+			_listViewContent       = _rootVE.Q<ListView>("ListView-Content");
 
-			modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
-
-			//_emptyList.visible     = false;
 			_startLauncher.visible = false;
 			_startSotA.visible     = false;
 
@@ -319,6 +320,51 @@ namespace UI
 			// TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
 			//m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
 			//m_StartSotA.RegisterCallback<ClickEvent>(ev => StartSotAClicked());
+			#endregion
+
+			#region Prepare the ListVew element.
+			var modItem = Resources.Load<VisualTreeAsset>("UI/ModItem");
+			// The "makeItem" function is called when the ListView needs more items to render.
+			Func<VisualElement> makeItem = () => modItem.Instantiate();
+
+			// As the user scrolls through the list, the ListView object recycles elements created by the "makeItem"
+			// function, and invokes the "bindItem" callback to associate the element with the matching data item
+			// (specified as an index in the list).
+			Action<VisualElement, int> bindItem = (e, i) =>
+												  {
+													  var mod       = modsList[i];
+													  var title     = e.Q<Label>("Name");
+													  var desc      = e.Q<Label>("Description");
+													  var installed = e.Q<Label>("Installed");
+													  var latest    = e.Q<Label>("Latest");
+													  var enable    = e.Q<Button>("Enabled");
+													  var update    = e.Q<Button>("Update");
+													  var remove    = e.Q<Button>("Remove");
+
+													  title.text     = mod.title;
+													  desc.text      = mod.desc;
+													  installed.text = mod.version;
+													  latest.text    = "";
+													  //enable.RegisterCallback();
+													  //update.RegisterCallback();
+													  //remove.RegisterCallback();
+
+												  };
+
+			var listContainer = _rootVE.Q<VisualElement>("ListContainer");
+
+			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem);
+			_listViewContent.AddToClassList("listView");
+			//_listViewContent.bindItem                      = bindItem;
+			//_listViewContent.fixedItemHeight               = 20.0f;
+			//_listViewContent.itemsSource                   = modList;
+			//_listViewContent.makeItem                      = makeItem;
+			_listViewContent.selectionType                 = SelectionType.None;
+			_listViewContent.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
+
+			listContainer.Add(_listViewContent);
+			#endregion
+			Debug.Log("OnEnable - ListView: " + _listViewContent.childCount);
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
@@ -327,6 +373,7 @@ namespace UI
 
 		private void PopulateListView(bool getDependencies)
 		{
+			// TODO set the column headers for current/installed to Installed/Latest
 			switch (_listMode)
 			{
 				case Mods.Available when getDependencies:
@@ -343,6 +390,7 @@ namespace UI
 				}
 				case Mods.Available:
 				{
+					_columnHeaderInstalled.text = "Creator";
 					if (mods.Length > 0)
 					{
 						Debug.Log("Populating Available Mods!");
@@ -380,20 +428,24 @@ namespace UI
 				}
 				case Mods.Installed:
 				{
-					if (installedMods.Length > 0)
+					Debug.Log("PopulateListView - count: " + modsList.Count);
+					_columnHeaderLatest.text = "Latest";
+					if (modsList.Count > 0)
 					{
-						Debug.Log("Populating Installed Mods!");
+						Debug.Log("PopulateListView: Installed Mods");
 						//CheckScrollViewContentList(installedMods); // Create ScrollView-Container if it doesn't exist yet.
 
+/*
 						foreach (InstalledMod moditem in installedMods)
 						{
-							ListViewAddItem(moditem);
+							//ListViewAddItem(moditem);
 						}
+*/
 					}
 					else
 					{
 						// TODO
-						throw new NotImplementedException("PopulateScrollView: Not processing zero installed mods yet!");
+						throw new NotImplementedException("PopulateListView: Not processing zero installed mods yet!");
 
 					}
 					break;
@@ -407,25 +459,23 @@ namespace UI
 
 		public void PopulateModsList(bool getDependencies = false)
 		{
-			_rootVE = GetComponent<UIDocument>().rootVisualElement;
-
 			// First we have to get our list of Mods. How we do that depends on the list we are interested in.
 			switch (_listMode)
 			{
 				case Mods.Installed:
 				{
-					// TODO set the column headers for current/installed to Installed/Latest
 					CheckInstalledMods();
 
-					if (installedMods.Length > 0)
+					//Debug.Log("PopulateModsList - ModsList: " + modsList.Count);
+					if (modsList.Count > 0)
 					{
-						//_emptyList.visible = true;
-						// TODO actually process the config file for the scrollview to use below.
+						//PopulateListView(false);
 					}
 					else
 					{
+						// TODO create the empty list conditions. Might be background image, might be a NoItemsObject, etc.
 						//Debug.Log("_emptyList.visible: " + _emptyList);
-						_emptyList.visible = true;
+						//_emptyList.visible = true;
 					}
 
 					break;
@@ -440,7 +490,10 @@ namespace UI
 					break;
 			}
 
-			PopulateListView(getDependencies);
+			_listViewContent.Rebuild();
+			Debug.Log("PopulateModsList - ListView: " + _listViewContent.childCount);
+
+			//PopulateListView(getDependencies);
 		}
 
 		public void PrintModsList()
@@ -484,7 +537,7 @@ namespace UI
 			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;  // Installed version or creator
 			lblLatest.text    = _listMode == Mods.Available ? modItem.version : "somehow get latest";  // Newest
 */
-			var modItemUI = new ModEntry(modItem);
+			var modItemUI = new ModListEntry(modItem);
 
 			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
 			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
@@ -520,6 +573,18 @@ namespace UI
 			}
 
 			PopulateModsList(false);
+		}
+
+		private void ShowChildren(VisualElement element)
+		{
+			if (element.childCount > 0)
+			{
+				foreach (var child in element.Children())
+				{
+					Debug.Log("Child: " + child.name);
+					ShowChildren(child);
+				}
+			}
 		}
 
 		private void StartLauncherClicked()

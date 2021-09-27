@@ -2,9 +2,11 @@ using System;
 
 namespace UI
 {
-	// Mods fetched from the web
+	/// <summary>
+	/// Represents a Mod listed on shroudmods.com
+	/// </summary>
 	[Serializable]
-	public class Mod
+	public class Mod : IComparable
 	{
 		public int    id;
 		public string creator;
@@ -21,5 +23,23 @@ namespace UI
 		public string file;
 		public string backupzip;
 		public bool   enabled;
+
+		public int SortByNameAscending(string title1, string title2)
+		{
+			return title1.CompareTo(title2);
+		}
+
+		public int CompareTo(object mod)
+		{
+			var item = (Mod) mod;
+			if (item.title == null)
+			{
+				return 1;
+			}
+			else
+			{
+				return this.title.CompareTo(item.title);
+			}
+		}
 	}
 }
