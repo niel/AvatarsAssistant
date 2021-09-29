@@ -142,3 +142,23 @@
     border-top-width: 3px;
     border-bottom-width: 3px;
 }
+
+.mod-item-container {
+    flex-direction: row;
+    height: 75px;
+    width: 100%;
+}
+
+.mod-item-text {
+    -unity-text-align: middle-center;
+    font-size: 14px;
+    -unity-text-outline-color: rgba(224, 224, 224, 255);
+}
+
+.unity-collection-view__item {
+	background-color: rgba(128, 128, 128, 0.25);
+}
+
+.unity-collection-view__item--alternative-background {
+	background-color: rgba(24, 24, 24, 0.5);
+}
