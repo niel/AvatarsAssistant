@@ -2,15 +2,15 @@
     <Style src="project://database/Assets/Resources/UI/AppStyle.uss?fileID=7433441132597879392&amp;guid=77e6b7ccb1dda529fa9bd2727cc92b2d&amp;type=3#AppStyle" />
     <ui:VisualElement name="ItemContainer" class="horizontal-container" style="flex-direction: row; width: 100%; height: 75px;">
         <ui:VisualElement name="TextContent" style="width: 60%; flex-direction: row; font-size: 14px;">
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="Name" style="width: 15%; -unity-text-align: middle-center;" />
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="Description" style="width: 50%; -unity-text-align: middle-left; flex-wrap: wrap; white-space: normal;" />
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="Installed" style="width: 17%; -unity-text-align: middle-center;" />
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="Latest" style="width: 15%; -unity-text-align: middle-center;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Name" class="mod-item-text" style="-unity-text-align: middle-center; width: 15%;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Description" class="mod-item-text" style="width: 52%; -unity-text-align: middle-left; flex-wrap: wrap; white-space: normal;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Installed" class="mod-item-text" style="width: 17%; -unity-text-align: middle-center;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Latest" class="mod-item-text" style="width: 15%; -unity-text-align: middle-center;" />
         </ui:VisualElement>
         <ui:VisualElement name="ActionButtons" class="button-bar" style="-unity-text-align: middle-center; width: 40%; justify-content: center;">
-            <ui:Button text="Enable" display-tooltip-when-elided="true" name="ButtonEnableDisable" class="button-mods" style="flex-direction: column; justify-content: center;" />
-            <ui:Button text="Update" display-tooltip-when-elided="true" name="ButtonUpdate" class="button-mods" />
-            <ui:Button text="Remove" display-tooltip-when-elided="true" name="ButtonRemove" class="button-mods" />
+            <ui:Button text="Enable" display-tooltip-when-elided="true" name="ButtonEnableDisable" class="button-mods" style="flex-direction: column; justify-content: center; display: flex; visibility: hidden;" />
+            <ui:Button text="Update" display-tooltip-when-elided="true" name="ButtonUpdate" class="button-mods" style="display: flex; visibility: hidden;" />
+            <ui:Button text="Remove" display-tooltip-when-elided="true" name="ButtonRemove" class="button-mods" style="visibility: hidden;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
