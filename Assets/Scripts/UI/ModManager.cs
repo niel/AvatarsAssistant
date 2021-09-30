@@ -23,6 +23,7 @@ namespace UI
 	public class ModManager : MonoBehaviour
 	{
 		const string ModsListUrl = "https://shroudmods.com/";
+		const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
 
 		private static bool testing = true;
 
@@ -30,7 +31,6 @@ namespace UI
 		private Label  _columnHeaderInstalled;
 		private Label  _columnHeaderLatest;
 		private string _dataPath;
-		private Label  _emptyList;
 		private Button _finishedInstall;
 		private string _jsonString;
 		private Button _listSwitcher;
@@ -87,23 +87,23 @@ namespace UI
 
 			// Destroy any previously created objects, before populating it again.
 			ClearModList();
+			modsList.Clear();
 
 			// If there any mods found, we populate the list with them.
 			if (configText.Length > 0)
 			{
 				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
-				var count = installedMods.Length;
-				Debug.Log("CheckInstalledMods - count: " + count);
 
-				modsList.Clear();
 				modsList.AddRange(installedMods);
 				modsList.Sort();
-				Debug.Log("CheckInstalledMods - modsList: " + modsList.Count);
 			}
 			else // If the file is less than 1, there are no mods found!
 			{
-				// TODO
-				Debug.Log("No Configuration in file.");
+				//throw new NotImplementedException("CheckInstalledMods: Empty Config File");
+				Debug.Log("CheckInstalledMods: No Configuration in file.");
+
+				installedMods = JsonHelper.FromJson<InstalledMod>(@NothingFoundJson);
+				modsList.AddRange(installedMods);
 			}
 		}
 
@@ -142,7 +142,6 @@ namespace UI
 			}
 
 			_listedModInstance.Clear();
-			Debug.Log("ClearModList: _listedModInstance count: " + _listedModInstance.Count);
 		}
 
 		private void DownLoadModList()
@@ -233,18 +232,12 @@ namespace UI
 			throw new NotImplementedException("GetModZip");
 		}
 
-		private void ListViewAddItem(InstalledMod moditem)
-		{
-			throw new NotImplementedException();
-		}
-
 		/// <summary>
 		/// OnEnable is called when the object becomes enabled and active.
 		/// </summary>
 		private void OnEnable()
 		{
 			_rootVE = GetComponent<UIDocument>().rootVisualElement;
-			Debug.Log("rooVE count: " +_rootVE.childCount);
 
 			#region Configure files and paths.
 			string sotaDirectory = testing
@@ -306,7 +299,6 @@ namespace UI
 			#region Initialise elements for easy access.
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
-			_emptyList             = _rootVE.Q<Label>("EmptyList");
 			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
@@ -325,32 +317,12 @@ namespace UI
 			#region Prepare the ListVew element.
 			var modItem = Resources.Load<VisualTreeAsset>("UI/ModItem");
 			// The "makeItem" function is called when the ListView needs more items to render.
-			Func<VisualElement> makeItem = () => modItem.Instantiate();
+			Func<VisualElement> makeItem = () => new ModItem();
 
 			// As the user scrolls through the list, the ListView object recycles elements created by the "makeItem"
 			// function, and invokes the "bindItem" callback to associate the element with the matching data item
 			// (specified as an index in the list).
-			Action<VisualElement, int> bindItem = (e, i) =>
-												  {
-													  var mod       = modsList[i];
-													  var title     = e.Q<Label>("Name");
-													  var desc      = e.Q<Label>("Description");
-													  var installed = e.Q<Label>("Installed");
-													  var latest    = e.Q<Label>("Latest");
-													  var enable    = e.Q<Button>("Enabled");
-													  var update    = e.Q<Button>("Update");
-													  var remove    = e.Q<Button>("Remove");
-
-													  title.text     = mod.title;
-													  desc.text      = mod.desc;
-													  installed.text = mod.version;
-													  latest.text    = "";
-													  //enable.RegisterCallback();
-													  //update.RegisterCallback();
-													  //remove.RegisterCallback();
-
-												  };
-
+			Action<VisualElement, int> bindItem = (e, i) => (e as ModItem).BindEntry(modsList[i]);
 			var listContainer = _rootVE.Q<VisualElement>("ListContainer");
 
 			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem);
@@ -364,7 +336,6 @@ namespace UI
 
 			listContainer.Add(_listViewContent);
 			#endregion
-			Debug.Log("OnEnable - ListView: " + _listViewContent.childCount);
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
@@ -491,9 +462,6 @@ namespace UI
 			}
 
 			_listViewContent.Rebuild();
-			Debug.Log("PopulateModsList - ListView: " + _listViewContent.childCount);
-
-			//PopulateListView(getDependencies);
 		}
 
 		public void PrintModsList()
@@ -537,7 +505,7 @@ namespace UI
 			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;  // Installed version or creator
 			lblLatest.text    = _listMode == Mods.Available ? modItem.version : "somehow get latest";  // Newest
 */
-			var modItemUI = new ModListEntry(modItem);
+			var modItemUI = new ModItem();
 
 			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
 			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();

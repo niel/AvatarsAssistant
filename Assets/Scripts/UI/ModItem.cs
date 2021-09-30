@@ -9,8 +9,6 @@ namespace UI
 		{
 			AddToClassList("list-item");
 
-			var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
-			Add(modItemTemplate.Instantiate());
 		}
 
 		public void BindEntry(Mod entry)
@@ -18,6 +16,9 @@ namespace UI
 			Debug.Log("ModItem: BindItem entered!");
 			if (entry.title != "NoModsFound")
 			{
+				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
+				Add(modItemTemplate.Instantiate());
+
 				var title     = this.Q<Label>("Name");
 				var desc      = this.Q<Label>("Description");
 				var installed = this.Q<Label>("Installed");
@@ -33,7 +34,8 @@ namespace UI
 
 				if (entry.enabled)
 				{
-					enable.text = "Disable";
+					enable.text    = "Disable";
+					enable.visible = true;
 				}
 				//enable.RegisterCallback<ClickEvent>(ev => ClickedEnabled());
 				//update.RegisterCallback();
@@ -41,20 +43,8 @@ namespace UI
 			}
 			else
 			{
-				var container = this.Q<VisualElement>("TextContent");
-
-				foreach (var child in container.Children())
-				{
-					container.Remove(child);
-				}
-
-				var emptyTemplate = new Label
-									{
-										name = "EmptyItem",
-										text = "Currently there are no mods installed.&#10;Click the &apos;Available mods&apos; button to see a list of those available."
-									};
-				emptyTemplate.AddToClassList("empty-list");
-				container.Add(emptyTemplate);
+				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/NoModsFound");
+				Add(modItemTemplate.Instantiate());
 			}
 		}
 

@@ -152,13 +152,21 @@
 .mod-item-text {
     -unity-text-align: middle-center;
     font-size: 14px;
-    -unity-text-outline-color: rgba(224, 224, 224, 255);
+    -unity-text-outline-color: rgb(224, 224, 224);
 }
 
 .unity-collection-view__item {
-	background-color: rgba(128, 128, 128, 0.25);
+    background-color: rgba(15, 15, 15, 0.25);
 }
 
 .unity-collection-view__item--alternative-background {
-	background-color: rgba(24, 24, 24, 0.5);
+    background-color: rgba(15, 15, 15, 0.5);
+}
+
+.unity-collection-view__item[dep=true] {
+	background-color: rgba(31, 31, 31, 0.25);
+}
+
+.unity-collection-view__item--alternative-background[dep=true] {
+	background-color: rgba(31, 31, 31, 0.5);
 }
