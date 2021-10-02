@@ -23,11 +23,7 @@ namespace UI
 		public string file;
 		public string backupzip;
 		public bool   enabled;
-
-		public int SortByNameAscending(string title1, string title2)
-		{
-			return title1.CompareTo(title2);
-		}
+		public string latest = "";
 
 		public int CompareTo(object mod)
 		{
@@ -40,6 +36,11 @@ namespace UI
 			{
 				return this.title.CompareTo(item.title);
 			}
+		}
+
+		public int SortByNameAscending(string title1, string title2)
+		{
+			return title1.CompareTo(title2);
 		}
 	}
 }

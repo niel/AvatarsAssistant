@@ -8,9 +8,10 @@ namespace UI
 	[Serializable]
 	public class InstalledMod : Mod
 	{
-			public InstalledMod()
-			{
-				clean = -1; // Just setting unused value to indicate it's not part of general use for this class.
-			}
+//		public string latest;
+		public InstalledMod()
+		{
+			//latest = "Retrieving...";
+		}
 	}
 }

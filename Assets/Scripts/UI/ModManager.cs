@@ -22,21 +22,22 @@ namespace UI
 {
 	public class ModManager : MonoBehaviour
 	{
-		const string ModsListUrl = "https://shroudmods.com/";
+		const string WebSiteUrl = "https://shroudmods.com/";
 		const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
 
 		private static bool testing = true;
 
-		private bool   _alreadyRefreshing;
-		private Label  _columnHeaderInstalled;
-		private Label  _columnHeaderLatest;
-		private string _dataPath;
-		private Button _finishedInstall;
-		private string _jsonString;
-		private Button _listSwitcher;
-		private Button _startLauncher;
-		private Button _startSotA;
+		private         bool   _alreadyRefreshing;
+		private         Label  _columnHeaderInstalled;
+		private         Label  _columnHeaderLatest;
+		internal static string DataPath;
+		private         Button _finishedInstall;
+		private         string _jsonString;
+		private         Button _listSwitcher;
+		private         Button _startLauncher;
+		private         Button _startSotA;
 
+		private VisualElement _listContainer;
 		private Mods _listMode;
 
 		public Mod[] deps;
@@ -64,9 +65,11 @@ namespace UI
 		public VisualElement noModFound;
 		public VisualElement panelInstall;
 
-		public InstalledMod[] installedMods;
+		public static InstalledMod[] installedMods;
 
 		private List<GameObject> _listedModInstance = new List<GameObject>();
+		private string           _versions;
+		private bool             _fetchingVersions;
 
 
 		private void CheckAvailableModList()
@@ -83,10 +86,9 @@ namespace UI
 		public void CheckInstalledMods()
 		{
 			// We get the list of mods from the config file
-			string configText = File.ReadAllText(_dataPath + @"SavedMods/InstalledMods.cfg");
+			string configText = File.ReadAllText(DataPath + @"SavedMods/InstalledMods.cfg");
 
 			// Destroy any previously created objects, before populating it again.
-			ClearModList();
 			modsList.Clear();
 
 			// If there any mods found, we populate the list with them.
@@ -96,6 +98,15 @@ namespace UI
 
 				modsList.AddRange(installedMods);
 				modsList.Sort();
+
+				_versions = "";
+				for (int i = 0; i < installedMods.Length; i++)
+				{
+					_versions = _versions + ";" + installedMods[i].id;
+				}
+				_versions = _versions[1..];
+
+				ActiveRoutine = StartCoroutine(CheckVersions(installedMods.Length));
 			}
 			else // If the file is less than 1, there are no mods found!
 			{
@@ -107,41 +118,64 @@ namespace UI
 			}
 		}
 
-		public void CheckScrollViewContentList(Array mods)
+		IEnumerator CheckVersions(int count)
 		{
-			if (mods.Length > 0)
-			{ // Regardless of what the list represents, it has entries so the ScrollView must be prepared.
-				var AppWindow = _rootVE.Q<VisualElement>("Background");
+			if (_fetchingVersions)
+			{
+				yield break;
+			}
+			else
+			{
+				_fetchingVersions = true;
+			}
 
-				if (AppWindow.Q<ScrollView>("ScrollView-Container") == null)
+			string[] versions = new string[count];
+
+			if (!string.IsNullOrEmpty(_versions))
+			{
+				versions = _versions.Split(';');
+
+				UnityWebRequest www = UnityWebRequest.Get(WebSiteUrl + "getmods.php?request=;" + _versions);
+				www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
+				UnityWebRequestAsyncOperation getting = www.SendWebRequest();
+
+				while (!getting.isDone)
 				{
-					var ListContainer = AppWindow.Q<VisualElement>("ListContainer");
-					var EmptyList     = AppWindow.Q<VisualElement>("EmptyList");
-					if (EmptyList != null)
-					{
-						//ListContainer.Remove(EmptyList);
-						EmptyList.visible = false;
-					}
-					else
-					{ // Really! How did the empty list text get removed without ScrollView being created?
-						Debug.Log("Really! How did the empty list text get removed without ScrollView being created?");
-					}
+					yield return null;
+				}
 
-					ListContainer.Add(new ScrollViewContent());
-					_listViewContent = ListContainer.Q<ListView>("ScrollView-Container");
-					Debug.Log("ScrollView added");
+				switch (www.result)
+				{
+					case UnityWebRequest.Result.ConnectionError:
+						Debug.Log("Network Error: " + www.responseCode + " " + www.error);
+						_fetchingVersions = false;
+
+						yield break;
+					case UnityWebRequest.Result.ProtocolError:
+						Debug.Log("HTTP Error: " + www.responseCode + " " + www.error);
+						_fetchingVersions = false;
+
+						yield break;
+					default:
+						string jsonString = fixJson(www.downloadHandler.text);
+
+						if (jsonString != null)
+						{
+							versions = JsonHelper.FromJson<string>(@jsonString);
+						}
+						break;
 				}
 			}
-		}
-
-		private void ClearModList()
-		{
-			foreach (GameObject obj in _listedModInstance)
+			else
 			{
-				Destroy(obj);
+				Debug.Log("CheckVersions: Not sending request as string is null or empty!");
 			}
 
-			_listedModInstance.Clear();
+			for (int i = 0; i < installedMods.Length; i++)
+			{
+				installedMods[i].latest = versions[i];
+			}
+			_listViewContent.Rebuild();
 		}
 
 		private void DownLoadModList()
@@ -165,10 +199,9 @@ namespace UI
 			{
 				_alreadyRefreshing = true;
 			}
-			ClearModList();
 
 			// Get list of mods first.
-			var www = UnityWebRequest.Get(ModsListUrl + "/getmods.php?request=mods");
+			var www = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=mods");
 			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); // Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
 
 			yield return www.SendWebRequest();
@@ -195,7 +228,7 @@ namespace UI
 			}
 
 			// Now we get the dependencies.
-			www                    = UnityWebRequest.Get(ModsListUrl + "/getmods.php?request=deps");
+			www                    = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=deps");
 			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
 
 			yield return www.SendWebRequest();
@@ -258,22 +291,22 @@ namespace UI
 
 					break;
 			}
-			_dataPath = baseAppInstallLocation + sotaDirectory;
+			DataPath = baseAppInstallLocation + sotaDirectory;
 
 			// Check that necessary directories and files exist.
-			if (!Directory.Exists(_dataPath + @"SavedMods"))
+			if (!Directory.Exists(DataPath + @"SavedMods"))
 			{
-				Directory.CreateDirectory(_dataPath + @"SavedMods");
+				Directory.CreateDirectory(DataPath + @"SavedMods");
 			}
 
-			if (!Directory.Exists(_dataPath + @"SavedMods/backup"))
+			if (!Directory.Exists(DataPath + @"SavedMods/backup"))
 			{
-				Directory.CreateDirectory(_dataPath + @"SavedMods/backup");
+				Directory.CreateDirectory(DataPath + @"SavedMods/backup");
 			}
 
-			if (!Directory.Exists(_dataPath + @"SavedMods/disabled"))
+			if (!Directory.Exists(DataPath + @"SavedMods/disabled"))
 			{
-				Directory.CreateDirectory(_dataPath + @"SavedMods/disabled");
+				Directory.CreateDirectory(DataPath + @"SavedMods/disabled");
 			}
 
 			/*
@@ -290,9 +323,9 @@ namespace UI
 			*/
 
 			// Check if the installed mods config file is there, if not we create it.
-			if (!File.Exists(_dataPath + @"SavedMods/InstalledMods.cfg"))
+			if (!File.Exists(DataPath + @"SavedMods/InstalledMods.cfg"))
 			{
-				File.CreateText(_dataPath + @"SavedMods/InstalledMods.cfg");
+				File.CreateText(DataPath + @"SavedMods/InstalledMods.cfg");
 			}
 			#endregion
 
@@ -302,7 +335,7 @@ namespace UI
 			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
-			_listViewContent       = _rootVE.Q<ListView>("ListView-Content");
+			_listContainer         = _rootVE.Q<VisualElement>("ListContainer");
 
 			_startLauncher.visible = false;
 			_startSotA.visible     = false;
@@ -323,109 +356,21 @@ namespace UI
 			// function, and invokes the "bindItem" callback to associate the element with the matching data item
 			// (specified as an index in the list).
 			Action<VisualElement, int> bindItem = (e, i) => (e as ModItem).BindEntry(modsList[i]);
-			var listContainer = _rootVE.Q<VisualElement>("ListContainer");
 
-			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem);
-			_listViewContent.AddToClassList("listView");
-			//_listViewContent.bindItem                      = bindItem;
-			//_listViewContent.fixedItemHeight               = 20.0f;
-			//_listViewContent.itemsSource                   = modList;
-			//_listViewContent.makeItem                      = makeItem;
-			_listViewContent.selectionType                 = SelectionType.None;
-			_listViewContent.showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly;
+			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem)
+															 {
+																 name = "ListViewContent",
+																 selectionType                 = SelectionType.None,
+																 showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
+															 };
+			_listViewContent.AddToClassList("listview");
 
-			listContainer.Add(_listViewContent);
+			_listContainer.Add(_listViewContent);
 			#endregion
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
 			_listMode = Mods.Available;
 			SwitchListClicked();
-		}
-
-		private void PopulateListView(bool getDependencies)
-		{
-			// TODO set the column headers for current/installed to Installed/Latest
-			switch (_listMode)
-			{
-				case Mods.Available when getDependencies:
-				{
-					if (deps.Length > 0)
-					{
-						Debug.Log("Populating Dependencies!");
-						// TODO
-						//CheckScrollViewContentList(deps);
-						throw new NotImplementedException();
-					}
-
-					return;
-				}
-				case Mods.Available:
-				{
-					_columnHeaderInstalled.text = "Creator";
-					if (mods.Length > 0)
-					{
-						Debug.Log("Populating Available Mods!");
-						//CheckScrollViewContentList(mods);
-
-						for (int i = 0; i < mods.Length; i++)
-						{
-							bool found = false;
-							if (installedMods != null)
-							{
-								for (int j = 0; j < installedMods.Length; j++)
-								{
-									if (mods[i].title  == installedMods[j].title  ||
-										mods[i].folder == installedMods[j].folder ||
-										mods[i].file   == installedMods[j].file)
-									{
-										found = true;
-
-										break; // break out of inner (j) loop to the next mode.
-									}
-								}
-							}
-
-							if (!found)
-							{
-								;
-							}
-
-							Debug.Log("PopulateScrollView: Adding new item...");
-							ScrollViewAddItem(mods[i]);
-						}
-					}
-
-					break;
-				}
-				case Mods.Installed:
-				{
-					Debug.Log("PopulateListView - count: " + modsList.Count);
-					_columnHeaderLatest.text = "Latest";
-					if (modsList.Count > 0)
-					{
-						Debug.Log("PopulateListView: Installed Mods");
-						//CheckScrollViewContentList(installedMods); // Create ScrollView-Container if it doesn't exist yet.
-
-/*
-						foreach (InstalledMod moditem in installedMods)
-						{
-							//ListViewAddItem(moditem);
-						}
-*/
-					}
-					else
-					{
-						// TODO
-						throw new NotImplementedException("PopulateListView: Not processing zero installed mods yet!");
-
-					}
-					break;
-				}
-				default:
-					;
-
-					break;
-			}
 		}
 
 		public void PopulateModsList(bool getDependencies = false)
@@ -435,19 +380,8 @@ namespace UI
 			{
 				case Mods.Installed:
 				{
+					// TODO Set the column headers for current/installed to Latest/Creator
 					CheckInstalledMods();
-
-					//Debug.Log("PopulateModsList - ModsList: " + modsList.Count);
-					if (modsList.Count > 0)
-					{
-						//PopulateListView(false);
-					}
-					else
-					{
-						// TODO create the empty list conditions. Might be background image, might be a NoItemsObject, etc.
-						//Debug.Log("_emptyList.visible: " + _emptyList);
-						//_emptyList.visible = true;
-					}
 
 					break;
 				}
@@ -480,39 +414,9 @@ namespace UI
 			throw new NotImplementedException();
 		}
 
-		public void SaveInstalledMods()
+		public static void SaveInstalledMods()
 		{
-			// Mod[] myArray = installedMods.ToArray();
-			File.WriteAllText(_dataPath + @"/SavedMods/InstalledMods.cfg", JsonHelper.ToJson(installedMods));
-		}
-
-		private void ScrollViewAddItem(Mod modItem)
-		{
-			//Debug.Log("ScrollViewAddItem: entered");
-/*
-			var modItemUI = modItemTemplate.Instantiate();
-
-			var lblName          = modItemUI.Q<Label>("Name");
-			var lblDesc          = modItemUI.Q<Label>("Description");
-			var lblInstalled     = modItemUI.Q<Label>("Installed");
-			var lblLatest        = modItemUI.Q<Label>("Latest");
-			var btnEnableDisable = modItemUI.Q<Button>("ButtonEnableDisable");
-			var btnUpdate        = modItemUI.Q<Button>("ButtonUpdate");
-			var btnRemove        = modItemUI.Q<Button>("ButtonRemove");
-
-			lblName.text      = modItem.title;
-			lblDesc.text      = modItem.desc;
-			lblInstalled.text = _listMode == Mods.Available ? modItem.creator : modItem.version;  // Installed version or creator
-			lblLatest.text    = _listMode == Mods.Available ? modItem.version : "somehow get latest";  // Newest
-*/
-			var modItemUI = new ModItem();
-
-			// TODO determine which buttons should be enabled/disabled, grey out if disabled - add ClickEvent if enabled.
-			//btnRemove.clicked += () => modItemUI.RemoveFromHierarchy();
-
-			_listViewContent.Add(modItemUI);
-			Debug.Log("ScrollViewAddItem: Added " + modItem.title);
-			Debug.Log("_scrollViewContent: " + _listViewContent.childCount);
+			File.WriteAllText(@DataPath + @"/SavedMods/InstalledMods.cfg", JsonHelper.ToJson(installedMods));
 		}
 
 		private void SwitchListClicked()
