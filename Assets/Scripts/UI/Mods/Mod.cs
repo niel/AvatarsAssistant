@@ -1,6 +1,6 @@
 using System;
 
-namespace UI
+namespace UI.Mods
 {
 	/// <summary>
 	/// Represents a Mod listed on shroudmods.com

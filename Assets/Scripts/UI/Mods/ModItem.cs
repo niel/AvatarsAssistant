@@ -1,10 +1,9 @@
 using System;
-using System.Collections;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UI
+namespace UI.Mods
 {
 	public class ModItem : VisualElement
 	{

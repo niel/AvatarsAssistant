@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UI
+namespace UI.Mods
 {
 	[Serializable]
 	public class DownloadStack

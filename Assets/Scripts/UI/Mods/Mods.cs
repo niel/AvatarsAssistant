@@ -1,4 +1,4 @@
-namespace UI
+namespace UI.Mods
 {
 	public enum Mods
 	{
