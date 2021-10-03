@@ -3,7 +3,7 @@
     <ui:VisualElement name="ItemContainer" class="horizontal-container" style="flex-direction: row; width: 100%; height: 75px;">
         <ui:VisualElement name="TextContent" style="width: 60%; flex-direction: row; font-size: 14px;">
             <ui:Label text="Label" display-tooltip-when-elided="true" name="Name" class="mod-item-text" style="-unity-text-align: middle-center; width: 15%;" />
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="Description" class="mod-item-text" style="width: 52%; -unity-text-align: middle-left; flex-wrap: wrap; white-space: normal;" />
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="Description" class="mod-item-text" style="width: 50%; -unity-text-align: middle-left; flex-wrap: wrap; white-space: normal;" />
             <ui:Label text="Label" display-tooltip-when-elided="true" name="Installed" class="mod-item-text" style="width: 17%; -unity-text-align: middle-center;" />
             <ui:Label text="Label" display-tooltip-when-elided="true" name="Latest" class="mod-item-text" style="width: 15%; -unity-text-align: middle-center;" />
         </ui:VisualElement>
