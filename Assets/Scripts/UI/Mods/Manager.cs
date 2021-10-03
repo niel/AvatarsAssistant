@@ -19,7 +19,7 @@ using UnityEngine.UIElements;
 
 namespace UI.Mods
 {
-	public class ModManager : MonoBehaviour
+	public class Manager : MonoBehaviour
 	{
 		const string WebSiteUrl = "https://shroudmods.com/";
 		const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";

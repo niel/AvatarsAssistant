@@ -84,8 +84,8 @@ namespace UI.Mods
 			// TODO handle enabling or disabling as needed
 			if (enable.text == "Enable")
 			{
-				var source = ModManager.DataPath + @"SavedMods/disabled/" + _source.file;
-				var target = ModManager.DataPath + @"Lua/"                + _source.file;
+				var source = Manager.DataPath + @"SavedMods/disabled/" + _source.file;
+				var target = Manager.DataPath + @"Lua/"                + _source.file;
 				//Debug.Log("Source: " + source);
 				//Debug.Log("Target: " + target);
 				try
@@ -109,18 +109,18 @@ namespace UI.Mods
 
 					throw;
 				}
-				for (int i = 0; i < ModManager.installedMods.Length; i++)
+				for (int i = 0; i < Manager.installedMods.Length; i++)
 				{
-					if (ModManager.installedMods[i].file == _source.file)
+					if (Manager.installedMods[i].file == _source.file)
 					{
-						ModManager.installedMods[i].enabled = true;
+						Manager.installedMods[i].enabled = true;
 					}
 				}
 
 				enable.text = "Disable";
 				enable.UnregisterCallback<ClickEvent>(ev => ClickedEnabled(enable));
 				enable.RegisterCallback<ClickEvent>(ev => ClickedDisabled(enable));
-				ModManager.SaveInstalledMods();
+				Manager.SaveInstalledMods();
 			}
 
 			enable.SetEnabled(true);
@@ -131,8 +131,8 @@ namespace UI.Mods
 			enable.SetEnabled(false);
 			if (enable.text == "Disable")
 			{
-				var source = ModManager.DataPath + @"Lua/"                + _source.file;
-				var target = ModManager.DataPath + @"SavedMods/disabled/" + _source.file;
+				var source = Manager.DataPath + @"Lua/"                + _source.file;
+				var target = Manager.DataPath + @"SavedMods/disabled/" + _source.file;
 				//Debug.Log("Source: "             + source);
 				//Debug.Log("Target: "             + target);
 				try
@@ -157,18 +157,18 @@ namespace UI.Mods
 					throw;
 				}
 
-				for (int i = 0; i < ModManager.installedMods.Length; i++)
+				for (int i = 0; i < Manager.installedMods.Length; i++)
 				{
-					if (ModManager.installedMods[i].file == _source.file)
+					if (Manager.installedMods[i].file == _source.file)
 					{
-						ModManager.installedMods[i].enabled = false;
+						Manager.installedMods[i].enabled = false;
 					}
 				}
 
 				enable.text = "Enable";
 				enable.UnregisterCallback<ClickEvent>(ev => ClickedDisabled(enable));
 				enable.RegisterCallback<ClickEvent>(ev => ClickedEnabled(enable));
-				ModManager.SaveInstalledMods();
+				Manager.SaveInstalledMods();
 			}
 
 			enable.SetEnabled(true);
