@@ -109,11 +109,11 @@ namespace SotaAssistant.UI.Mods
 
 					throw;
 				}
-				for (int i = 0; i < Manager.installedMods.Length; i++)
+				for (int i = 0; i < Manager.InstalledMods.Length; i++)
 				{
-					if (Manager.installedMods[i].file == _source.file)
+					if (Manager.InstalledMods[i].file == _source.file)
 					{
-						Manager.installedMods[i].enabled = true;
+						Manager.InstalledMods[i].enabled = true;
 					}
 				}
 
@@ -157,11 +157,11 @@ namespace SotaAssistant.UI.Mods
 					throw;
 				}
 
-				for (int i = 0; i < Manager.installedMods.Length; i++)
+				for (int i = 0; i < Manager.InstalledMods.Length; i++)
 				{
-					if (Manager.installedMods[i].file == _source.file)
+					if (Manager.InstalledMods[i].file == _source.file)
 					{
-						Manager.installedMods[i].enabled = false;
+						Manager.InstalledMods[i].enabled = false;
 					}
 				}
 

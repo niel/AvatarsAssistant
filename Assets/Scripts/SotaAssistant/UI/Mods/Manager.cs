@@ -21,8 +21,8 @@ namespace SotaAssistant.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{
-		const string WebSiteUrl = "https://shroudmods.com/";
-		const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
+		private const string WebSiteUrl       = "https://shroudmods.com/";
+		private const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
 
 		private         bool   _alreadyRefreshing;
 		private         Label  _columnHeaderInstalled;
@@ -44,11 +44,10 @@ namespace SotaAssistant.UI.Mods
 
 		public VisualTreeAsset modItemTemplate;
 
-		[HideInInspector]
 		public Coroutine ActiveRoutine;
 
 		[HideInInspector]
-		public bool downloading = false;
+		public bool downloading;
 
 		[HideInInspector]
 		public DownloadStack downloadStack;
@@ -56,14 +55,8 @@ namespace SotaAssistant.UI.Mods
 		// ReSharper disable once InconsistentNaming
 		private VisualElement _rootVE;
 
-		public VisualElement installedModsScrollviewContent;
-		public VisualElement modObject;
-		public VisualElement noModFound;
-		public VisualElement panelInstall;
+		public static InstalledMod[] InstalledMods;
 
-		public static InstalledMod[] installedMods;
-
-		private List<GameObject> _listedModInstance = new List<GameObject>();
 		private string           _versions;
 		private bool             _fetchingVersions;
 
@@ -90,27 +83,27 @@ namespace SotaAssistant.UI.Mods
 			// If there any mods found, we populate the list with them.
 			if (configText.Length > 0)
 			{
-				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
+				InstalledMods = JsonHelper.FromJson<InstalledMod>(@configText);
 
-				modsList.AddRange(installedMods);
+				modsList.AddRange(InstalledMods);
 				modsList.Sort();
 
 				_versions = "";
-				for (int i = 0; i < installedMods.Length; i++)
+				for (int i = 0; i < InstalledMods.Length; i++)
 				{
-					_versions = _versions + ";" + installedMods[i].id;
+					_versions = _versions + ";" + InstalledMods[i].id;
 				}
 				_versions = _versions[1..];
 
-				ActiveRoutine = StartCoroutine(CheckVersions(installedMods.Length));
+				ActiveRoutine = StartCoroutine(CheckVersions(InstalledMods.Length));
 			}
 			else // If the file is less than 1, there are no mods found!
 			{
 				//throw new NotImplementedException("CheckInstalledMods: Empty Config File");
 				Debug.Log("CheckInstalledMods: No Configuration in file.");
 
-				installedMods = JsonHelper.FromJson<InstalledMod>(@NothingFoundJson);
-				modsList.AddRange(installedMods);
+				InstalledMods = JsonHelper.FromJson<InstalledMod>(@NothingFoundJson);
+				modsList.AddRange(InstalledMods);
 			}
 		}
 
@@ -153,7 +146,7 @@ namespace SotaAssistant.UI.Mods
 
 						yield break;
 					default:
-						string jsonString = fixJson(www.downloadHandler.text);
+						string jsonString = FixJson(www.downloadHandler.text);
 
 						if (jsonString != null)
 						{
@@ -167,9 +160,9 @@ namespace SotaAssistant.UI.Mods
 				Debug.Log("CheckVersions: Not sending request as string is null or empty!");
 			}
 
-			for (int i = 0; i < installedMods.Length; i++)
+			for (int i = 0; i < InstalledMods.Length; i++)
 			{
-				installedMods[i].latest = versions[i];
+				InstalledMods[i].latest = versions[i];
 			}
 			_listViewContent.Rebuild();
 		}
@@ -179,7 +172,7 @@ namespace SotaAssistant.UI.Mods
 			throw new NotImplementedException();
 		}
 
-		private static string fixJson(string value)
+		private static string FixJson(string value)
 		{
 			value = "{\"Items\":" + value + "}";
 			return value;
@@ -198,7 +191,7 @@ namespace SotaAssistant.UI.Mods
 
 			// Get list of mods first.
 			var www = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=mods");
-			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); // Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
+			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); // Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecifiedPublicKey.cs script
 
 			yield return www.SendWebRequest();
 
@@ -213,7 +206,7 @@ namespace SotaAssistant.UI.Mods
 
 					break;
 				default:
-					_jsonString = fixJson(www.downloadHandler.text);
+					_jsonString = FixJson(www.downloadHandler.text);
 					Debug.Log("Mods: " + _jsonString);
 
 					mods = JsonHelper.FromJson<Mod>(_jsonString);
@@ -239,7 +232,7 @@ namespace SotaAssistant.UI.Mods
 
 					break;
 				default:
-					_jsonString = fixJson(www.downloadHandler.text);
+					_jsonString = FixJson(www.downloadHandler.text);
 					Debug.Log("Deps: " + _jsonString);
 
 					if (_jsonString != null)
@@ -256,7 +249,7 @@ namespace SotaAssistant.UI.Mods
 			_alreadyRefreshing = false;
 		}
 
-		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] _installedmods, Action<bool> completed)
+		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] installedModsList, Action<bool> completed)
 		{
 			throw new NotImplementedException("GetModZip");
 		}
@@ -287,13 +280,14 @@ namespace SotaAssistant.UI.Mods
 			#endregion
 
 			#region Prepare the ListVew element.
-			var modItem = Resources.Load<VisualTreeAsset>("UI/ModItem");
 			// The "makeItem" function is called when the ListView needs more items to render.
 			Func<VisualElement> makeItem = () => new ModItem();
 
 			// As the user scrolls through the list, the ListView object recycles elements created by the "makeItem"
 			// function, and invokes the "bindItem" callback to associate the element with the matching data item
 			// (specified as an index in the list).
+			// ReSharper disable once ConvertToLocalFunction
+			// ReSharper disable once PossibleNullReferenceException
 			Action<VisualElement, int> bindItem = (e, i) => (e as ModItem).BindEntry(modsList[i]);
 
 			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem)
@@ -312,7 +306,7 @@ namespace SotaAssistant.UI.Mods
 			SwitchListClicked();
 		}
 
-		public void PopulateModsList(bool getDependencies = false)
+		private void PopulateModsList(bool getDependencies = false)
 		{
 			// First we have to get our list of Mods. How we do that depends on the list we are interested in.
 			switch (_listMode)
@@ -331,7 +325,6 @@ namespace SotaAssistant.UI.Mods
 					break;
 				default:
 					throw new ArgumentException("Attempt to populate list from incorrect mode!");
-					break;
 			}
 
 			_listViewContent.Rebuild();
@@ -341,9 +334,9 @@ namespace SotaAssistant.UI.Mods
 		{
 			if (mods.Length > 0)
 			{
-				foreach (Mod moditem in mods)
+				foreach (var modItem in mods)
 				{
-					Debug.Log("Name: " + moditem.title + "\n");
+					Debug.Log("Name: " + modItem.title + "\n");
 				}
 			}
 		}
@@ -355,7 +348,7 @@ namespace SotaAssistant.UI.Mods
 
 		public static void SaveInstalledMods()
 		{
-			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(installedMods));
+			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
 		}
 
 		private void SwitchListClicked()
@@ -380,22 +373,11 @@ namespace SotaAssistant.UI.Mods
 					break;
 				default:
 					// WTF, Should never be set to Disabled!!
+					throw new ArgumentException("SotAA.UI.Mods.Manager bad SwitchListClicked mode provided");
 					break;
 			}
 
 			PopulateModsList(false);
-		}
-
-		private void ShowChildren(VisualElement element)
-		{
-			if (element.childCount > 0)
-			{
-				foreach (var child in element.Children())
-				{
-					Debug.Log("Child: " + child.name);
-					ShowChildren(child);
-				}
-			}
 		}
 
 		private void StartLauncherClicked()
@@ -417,7 +399,7 @@ namespace SotaAssistant.UI.Mods
 
 		}
 
-		public static IEnumerator UpdateMod(int id, InstalledMod[] _installedmods, Action<bool> completed)
+		public static IEnumerator UpdateMod(int id, InstalledMod[] installedMds, Action<bool> completed)
 		{
 			throw new NotImplementedException();
 			yield break;
