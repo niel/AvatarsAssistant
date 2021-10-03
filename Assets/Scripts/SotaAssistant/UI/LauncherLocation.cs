@@ -1,4 +1,4 @@
-namespace UI
+namespace SotaAssistant.UI
 {
 	// Settings.cfg
 	internal class LauncherLocation

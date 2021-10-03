@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UI.Mods
+namespace SotaAssistant.UI.Mods
 {
 	public class ModItem : VisualElement
 	{
@@ -84,8 +84,8 @@ namespace UI.Mods
 			// TODO handle enabling or disabling as needed
 			if (enable.text == "Enable")
 			{
-				var source = Manager.DataPath + @"SavedMods/disabled/" + _source.file;
-				var target = Manager.DataPath + @"Lua/"                + _source.file;
+				var source = Main.ModsSavedDisabledPath + _source.file;
+				var target = Main.LuaPath               + _source.file;
 				//Debug.Log("Source: " + source);
 				//Debug.Log("Target: " + target);
 				try
@@ -131,8 +131,8 @@ namespace UI.Mods
 			enable.SetEnabled(false);
 			if (enable.text == "Disable")
 			{
-				var source = Manager.DataPath + @"Lua/"                + _source.file;
-				var target = Manager.DataPath + @"SavedMods/disabled/" + _source.file;
+				var source = @Main.LuaPath               + _source.file;
+				var target = @Main.ModsSavedDisabledPath + _source.file;
 				//Debug.Log("Source: "             + source);
 				//Debug.Log("Target: "             + target);
 				try

@@ -17,19 +17,16 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UIElements;
 
-namespace UI.Mods
+namespace SotaAssistant.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{
 		const string WebSiteUrl = "https://shroudmods.com/";
 		const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
 
-		private static bool testing = true;
-
 		private         bool   _alreadyRefreshing;
 		private         Label  _columnHeaderInstalled;
 		private         Label  _columnHeaderLatest;
-		internal static string DataPath;
 		private         Button _finishedInstall;
 		private         string _jsonString;
 		private         Button _listSwitcher;
@@ -85,7 +82,7 @@ namespace UI.Mods
 		public void CheckInstalledMods()
 		{
 			// We get the list of mods from the config file
-			string configText = File.ReadAllText(DataPath + @"SavedMods/InstalledMods.cfg");
+			string configText = File.ReadAllText(@Main.ModsInstalled);
 
 			// Destroy any previously created objects, before populating it again.
 			modsList.Clear();
@@ -271,63 +268,6 @@ namespace UI.Mods
 		{
 			_rootVE = GetComponent<UIDocument>().rootVisualElement;
 
-			#region Configure files and paths.
-			string sotaDirectory = testing
-									   ? @"/Portalarium/Shroud of the Avatar(QA)/"
-									   : @"/Portalarium/Shroud of the Avatar/";
-			string baseAppInstallLocation;
-
-			switch (Application.platform)
-			{
-				case RuntimePlatform.WindowsPlayer:
-				case RuntimePlatform.LinuxPlayer:
-				case RuntimePlatform.OSXPlayer:
-					baseAppInstallLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-					break;
-				default:
-					baseAppInstallLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-
-					break;
-			}
-			DataPath = baseAppInstallLocation + sotaDirectory;
-
-			// Check that necessary directories and files exist.
-			if (!Directory.Exists(DataPath + @"SavedMods"))
-			{
-				Directory.CreateDirectory(DataPath + @"SavedMods");
-			}
-
-			if (!Directory.Exists(DataPath + @"SavedMods/backup"))
-			{
-				Directory.CreateDirectory(DataPath + @"SavedMods/backup");
-			}
-
-			if (!Directory.Exists(DataPath + @"SavedMods/disabled"))
-			{
-				Directory.CreateDirectory(DataPath + @"SavedMods/disabled");
-			}
-
-			/*
-			// Check if our settings file exists. if not, create it (this only saves the location of the launcher)
-			if (!File.Exists(_dataPath + @"SavedMods/Settings.cfg"))
-			{
-				//File.CreateText(_dataPath + @"/SavedMods/Settings.cfg");
-				//create only when the button is clicked
-			}
-			else
-			{
-				JsonUtility.FromJson<LauncherLocation>(File.ReadAllText(_dataPath + @"SavedMods/Settings.cfg"));
-			}
-			*/
-
-			// Check if the installed mods config file is there, if not we create it.
-			if (!File.Exists(DataPath + @"SavedMods/InstalledMods.cfg"))
-			{
-				File.CreateText(DataPath + @"SavedMods/InstalledMods.cfg");
-			}
-			#endregion
-
 			#region Initialise elements for easy access.
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
     		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
@@ -415,7 +355,7 @@ namespace UI.Mods
 
 		public static void SaveInstalledMods()
 		{
-			File.WriteAllText(@DataPath + @"/SavedMods/InstalledMods.cfg", JsonHelper.ToJson(installedMods));
+			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(installedMods));
 		}
 
 		private void SwitchListClicked()

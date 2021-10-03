@@ -1,6 +1,6 @@
 using System;
 
-namespace UI.Mods
+namespace SotaAssistant.UI.Mods
 {
 	/// <summary>
 	/// Represents a Mod that has been installed locally.
