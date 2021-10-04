@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace SotaAssistant
@@ -7,16 +10,21 @@ namespace SotaAssistant
 	public class Main : MonoBehaviour
 	{
 		private const  bool   _testing = true;
-		private static string _luaPath;
-		private static string _modsInstalled;
-		private static string _modsSavedPath;
-		private static string _modsSavedBackupPath;
-		private static string _modsSavedDisabledPath;
-		private        string _sotaAppPath;
+
+		private static   string       _chatLogsPath;
+		private static   string       _luaPath;
+		private static   string       _modsInstalled;
+		private static   string       _modsSavedPath;
+		private static   string       _modsSavedBackupPath;
+		private static   string       _modsSavedDisabledPath;
+		private readonly string       _sotaAppPath;
+		public           List<string> users;
 
 		public string SotaAppPath { get { return _sotaAppPath; }}
 
 		public static string ModsInstalled { get { return _modsInstalled; }}
+
+		public static string ChatLogsPath { get { return _chatLogsPath; }}
 
 		public static string LuaPath { get { return _luaPath; }}
 
@@ -49,6 +57,8 @@ namespace SotaAssistant
 					break;
 			}
 			_sotaAppPath = @baseAppInstallLocation + @sotaDirectory;
+			_chatLogsPath = SotaAppPath             + @"ChatLogs/";
+			_luaPath      = SotaAppPath             + @"Lua/";
 
 			#region Directory Checks
 			_modsSavedPath = SotaAppPath + @"SavedMods/";
@@ -91,6 +101,28 @@ namespace SotaAssistant
 				File.CreateText(ModsInstalled);
 			}
 			#endregion
+
+			users = new List<string>();
+			Users();
+		}
+
+		public void Users()
+		{
+			string[] files     = Directory.GetFiles(Main.ChatLogsPath);
+			var pattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
+			users.Clear();
+			foreach (string file in files)
+			{
+				var fileProps = new FileInfo(file);
+				var match     = Regex.Match(fileProps.Name, @pattern, RegexOptions.IgnoreCase);
+				var user      = match.Groups["name"].ToString();
+				if (match.Success && !users.Contains(user))
+				{
+					Debug.Log("Adding name: " + user);
+					users.Add(user);
+				}
+			}
+			users.Sort();
 		}
 	}
 }
