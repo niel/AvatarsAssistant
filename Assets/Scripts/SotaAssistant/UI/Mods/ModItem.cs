@@ -22,7 +22,7 @@ namespace SotaAssistant.UI.Mods
 
 			if (entry.title != "NoModsFound")
 			{
-				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/ModItem");
+				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/Mods/ModItem");
 				Add(modItemTemplate.Instantiate());
 
 				//this.name = "listEntry-" + entry.title;
@@ -71,7 +71,7 @@ namespace SotaAssistant.UI.Mods
 			}
 			else
 			{
-				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/NoModsFound");
+				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/Mods/NoModsFound");
 				Add(modItemTemplate.Instantiate());
 			}
 		}
