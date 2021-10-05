@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 134144503}
   - component: {fileID: 134144502}
   - component: {fileID: 134144501}
+  - component: {fileID: 134144504}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -207,6 +208,19 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &134144504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 134144500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b74ead184754197b87272693f832905, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  users: []
 --- !u!1 &1159668155
 GameObject:
   m_ObjectHideFlags: 0
@@ -217,7 +231,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1159668157}
   - component: {fileID: 1159668156}
-  - component: {fileID: 1159668158}
+  - component: {fileID: 1159668159}
+  - component: {fileID: 1159668160}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -239,7 +254,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: 29b5f62532a54194aa0d1f4a41a618c2, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: fa429edf66fa4c93ebcaf5b9d4a38ad4, type: 3}
   m_SortingOrder: 0
 --- !u!4 &1159668157
 Transform:
@@ -256,7 +271,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1159668158
+--- !u!114 &1159668159
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -265,7 +280,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 1159668155}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b74ead184754197b87272693f832905, type: 3}
+  m_Script: {fileID: 11500000, guid: 8a410b213209442fb15a69799f0240a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  users: []
+--- !u!114 &1159668160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1159668155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20618772f8e4331d7bfc04c97eea3593, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deps: []
+  mods: []
+  modsList: []
+  modItemTemplate: {fileID: 0}
+  downloading: 0
+  downloadStack:
+    mods: []
+    depsId: 
+    deps: []
+    message: []
+    dlphase: 0
+    totalphase: 0

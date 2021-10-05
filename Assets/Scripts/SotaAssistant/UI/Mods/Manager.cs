@@ -290,12 +290,12 @@ namespace SotaAssistant.UI.Mods
 			// ReSharper disable once PossibleNullReferenceException
 			Action<VisualElement, int> bindItem = (e, i) => (e as ModItem).BindEntry(modsList[i]);
 
-			_listViewContent                               = new ListView(modsList, 75.0f, makeItem, bindItem)
-															 {
-																 name = "ListViewContent",
-																 selectionType                 = SelectionType.None,
-																 showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
-															 };
+			_listViewContent = new ListView(modsList, 75.0f, makeItem, bindItem)
+							 {
+								 name = "ListViewContent",
+								 selectionType                 = SelectionType.None,
+								 showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
+							 };
 			_listViewContent.AddToClassList("listview");
 
 			_listContainer.Add(_listViewContent);
