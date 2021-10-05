@@ -7,7 +7,8 @@ namespace SotaAssistant.UI.Mods
 {
 	public class ModItem : VisualElement
 	{
-		private Mod       _source;
+		private Mod  _source;
+		private long _lastClick;
 
 		public ModItem()
 		{
@@ -56,14 +57,7 @@ namespace SotaAssistant.UI.Mods
 				}
 
 				enable.text = entry.enabled ? "Disable" : "Enable";
-				if (enable.text == "enable")
-				{
-					enable.RegisterCallback<ClickEvent>(ev => ClickedEnabled(enable));
-				}
-				else
-				{
-					enable.RegisterCallback<ClickEvent>(ev => ClickedDisabled(enable));
-				}
+				enable.RegisterCallback<ClickEvent>(ClickedEnabled, TrickleDown.TrickleDown);
 				enable.AddToClassList("button-enabled");
 				//update.RegisterCallback(ClickedUpdate(update));
 				//remove.RegisterCallback<ClickEvent>(ev => ClickedRemove(remove));
@@ -76,8 +70,19 @@ namespace SotaAssistant.UI.Mods
 			}
 		}
 
-		private void ClickedEnabled(Button enable)
+		private void ClickedEnabled(ClickEvent evt)
 		{
+#if PLATFORM_STANDALONE_LINUX
+			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
+			{
+				Debug.Log("Ignoring duplicate click event!");
+				return;
+			}
+			_lastClick = evt.timestamp;
+#endif
+
+			var enable = (Button)evt.target;
+
 			//var enable = this.Q<Button>("ButtonEnableDisable");
 			//Disable the button while we are processing it.
 			enable.SetEnabled(false);
@@ -90,12 +95,12 @@ namespace SotaAssistant.UI.Mods
 				//Debug.Log("Target: " + target);
 				try
 				{
-					Debug.Log("Trying to enable");
+					//Debug.Log("Trying to enable");
 					if (File.Exists(source))
 					{
-						Debug.Log("Moving the file!");
+						//Debug.Log("Moving the file!");
 						File.Move(@source, @target);
-						Debug.Log("Moved?");
+						//Debug.Log("Moved?");
 					}
 					else
 					{
@@ -118,16 +123,61 @@ namespace SotaAssistant.UI.Mods
 				}
 
 				enable.text = "Disable";
-				enable.UnregisterCallback<ClickEvent>(ev => ClickedEnabled(enable));
-				enable.RegisterCallback<ClickEvent>(ev => ClickedDisabled(enable));
-				Manager.SaveInstalledMods();
 			}
+			else if (enable.text == "Disable")
+			{
+				var source = @Main.LuaPath               + _source.file;
+				var target = @Main.ModsSavedDisabledPath + _source.file;
+				//Debug.Log("Source: "             + source);
+				//Debug.Log("Target: "             + target);
+				try
+				{
+					//Debug.Log("Trying to disable");
+					if (File.Exists(source))
+					{
+						//Debug.Log("Moving the file!");
+						File.Move(@source, @target);
+						//Debug.Log("Moved?");
+					}
+					else
+					{
+						Debug.Log("File not found!");
+					}
+
+				}
+				catch (Exception e)
+				{
+					Debug.Log(e);
+
+					throw;
+				}
+
+				for (int i = 0; i < Manager.InstalledMods.Length; i++)
+				{
+					if (Manager.InstalledMods[i].file == _source.file)
+					{
+						Manager.InstalledMods[i].enabled = false;
+					}
+				}
+
+				enable.text = "Enable";
+			}
+			Manager.SaveInstalledMods();
 
 			enable.SetEnabled(true);
 		}
 
-		private void ClickedDisabled(Button enable)
+		private void ClickedDisabled(ClickEvent evt)
 		{
+#if PLATFORM_STANDALONE_LINUX
+			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
+			{
+				return;
+			}
+			_lastClick = evt.timestamp;
+#endif
+			var enable = (Button)evt.target;
+
 			enable.SetEnabled(false);
 			if (enable.text == "Disable")
 			{
@@ -166,8 +216,8 @@ namespace SotaAssistant.UI.Mods
 				}
 
 				enable.text = "Enable";
-				enable.UnregisterCallback<ClickEvent>(ev => ClickedDisabled(enable));
-				enable.RegisterCallback<ClickEvent>(ev => ClickedEnabled(enable));
+				enable.UnregisterCallback<ClickEvent>(ClickedDisabled);
+				enable.RegisterCallback<ClickEvent>(ClickedEnabled, TrickleDown.TrickleDown);
 				Manager.SaveInstalledMods();
 			}
 
