@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using SotaAssistant.UI.Mods;
 
-namespace SotaAssistant.UI.Mods
+namespace SotaAssistant.Web
 {
 	[Serializable]
 	public class DownloadStack
