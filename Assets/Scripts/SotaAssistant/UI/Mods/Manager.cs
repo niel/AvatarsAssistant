@@ -9,36 +9,45 @@
 // @author Archer
 //
 
+using SotaAssistant.Utility;
+using SotaAssistant.Web;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.UIElements;
+using UnityEngine.Networking;
 
 namespace SotaAssistant.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{
-		private const string WebSiteUrl       = "https://shroudmods.com/";
-		private const string NothingFoundJson = @"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
+		private const string WebSiteUrl = "https://shroudmods.com/";
 
-		private         bool   _alreadyRefreshing;
-		private         Label  _columnHeaderInstalled;
-		private         Label  _columnHeaderLatest;
-		private         Button _finishedInstall;
-		private         string _jsonString;
-		private         Button _listSwitcher;
-		private         Button _startLauncher;
-		private         Button _startSotA;
+		private const string NothingFoundJson =
+			@"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
+
+		private static bool   _alreadyDownloading;
+		private        bool   _alreadyRefreshing;
+		private        Label  _columnHeaderInstalled;
+		private        Label  _columnHeaderLatest;
+		private        bool   _doOnce;
+		private        Button _finishedInstall;
+		private        string _jsonString;
+		private        Button _listSwitcher;
+		private        Button _startLauncher;
+		private        Button _startSotA;
 
 		private VisualElement _listContainer;
-		private Mods _listMode;
+		private Mods          _listMode;
 
 		public Mod[] deps;
 		public Mod[] mods;
-		public List<Mod> modsList; // List bound to ListView for displaying the others (installedModsList, mods, deps, etc.).
+
+		public List<Mod>
+			modsList; // List bound to ListView for displaying the others (installedModsList, mods, deps, etc.).
 
 		private ListView _listViewContent;
 
@@ -46,19 +55,17 @@ namespace SotaAssistant.UI.Mods
 
 		public Coroutine ActiveRoutine;
 
-		[HideInInspector]
-		public bool downloading;
+		[HideInInspector] public bool downloading;
 
-		[HideInInspector]
-		public DownloadStack downloadStack;
+		[HideInInspector] public DownloadStack downloadStack;
 
 		// ReSharper disable once InconsistentNaming
 		private VisualElement _rootVE;
 
 		public static InstalledMod[] InstalledMods;
 
-		private string           _versions;
-		private bool             _fetchingVersions;
+		private string _versions;
+		private bool   _fetchingVersions;
 
 
 		private void CheckAvailableModList()
@@ -93,6 +100,7 @@ namespace SotaAssistant.UI.Mods
 				{
 					_versions = _versions + ";" + InstalledMods[i].id;
 				}
+
 				_versions = _versions[1..];
 
 				ActiveRoutine = StartCoroutine(CheckVersions(InstalledMods.Length));
@@ -152,6 +160,7 @@ namespace SotaAssistant.UI.Mods
 						{
 							versions = JsonHelper.FromJson<string>(@jsonString);
 						}
+
 						break;
 				}
 			}
@@ -164,6 +173,7 @@ namespace SotaAssistant.UI.Mods
 			{
 				InstalledMods[i].latest = versions[i];
 			}
+
 			_listViewContent.Rebuild();
 		}
 
@@ -175,6 +185,7 @@ namespace SotaAssistant.UI.Mods
 		private static string FixJson(string value)
 		{
 			value = "{\"Items\":" + value + "}";
+
 			return value;
 		}
 
@@ -191,7 +202,8 @@ namespace SotaAssistant.UI.Mods
 
 			// Get list of mods first.
 			var www = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=mods");
-			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); // Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecifiedPublicKey.cs script
+			www.certificateHandler =
+				new AcceptAllCertificatesSignedWithASpecificKeyPublicKey(); // Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecifiedPublicKey.cs script
 
 			yield return www.SendWebRequest();
 
@@ -239,6 +251,7 @@ namespace SotaAssistant.UI.Mods
 					{
 						deps = JsonHelper.FromJson<Mod>(@_jsonString);
 						Debug.Log("Deps[]: " + deps.Length);
+
 						//PopulateModsList(getDependencies);
 					}
 
@@ -249,7 +262,8 @@ namespace SotaAssistant.UI.Mods
 			_alreadyRefreshing = false;
 		}
 
-		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] installedModsList, Action<bool> completed)
+		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] installedModsList,
+											Action<bool>  completed)
 		{
 			throw new NotImplementedException("GetModZip");
 		}
@@ -262,8 +276,9 @@ namespace SotaAssistant.UI.Mods
 			_rootVE = GetComponent<UIDocument>().rootVisualElement;
 
 			#region Initialise elements for easy access.
+
 			_columnHeaderInstalled = _rootVE.Q<Label>("ColumnHeader-Installed");
-    		_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
+			_columnHeaderLatest    = _rootVE.Q<Label>("ColumnHeader-Latest");
 			_listSwitcher          = _rootVE.Q<Button>("Button-ModsListSwitch");
 			_startLauncher         = _rootVE.Q<Button>("Button-StartLauncher");
 			_startSotA             = _rootVE.Q<Button>("Button-StartSotA");
@@ -277,9 +292,11 @@ namespace SotaAssistant.UI.Mods
 			// TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
 			//m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
 			//m_StartSotA.RegisterCallback<ClickEvent>(ev => StartSotAClicked());
+
 			#endregion
 
 			#region Prepare the ListVew element.
+
 			// The "makeItem" function is called when the ListView needs more items to render.
 			Func<VisualElement> makeItem = () => new ModItem();
 
@@ -291,14 +308,15 @@ namespace SotaAssistant.UI.Mods
 			Action<VisualElement, int> bindItem = (e, i) => (e as ModItem).BindEntry(modsList[i]);
 
 			_listViewContent = new ListView(modsList, 75.0f, makeItem, bindItem)
-							 {
-								 name = "ListViewContent",
-								 selectionType                 = SelectionType.None,
-								 showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
-							 };
+							   {
+								   name                          = "ListViewContent",
+								   selectionType                 = SelectionType.None,
+								   showAlternatingRowBackgrounds = AlternatingRowBackground.ContentOnly
+							   };
 			_listViewContent.AddToClassList("listview");
 
 			_listContainer.Add(_listViewContent);
+
 			#endregion
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
@@ -360,7 +378,7 @@ namespace SotaAssistant.UI.Mods
 					_listSwitcher.text = "Installed Mods";
 
 					//_columnHeaderInstalled.text = "Current";
-					_columnHeaderLatest.text    = "Creator";
+					_columnHeaderLatest.text = "Creator";
 
 					break;
 				case Mods.Available:
@@ -368,12 +386,13 @@ namespace SotaAssistant.UI.Mods
 					_listSwitcher.text = "Available Mods";
 
 					//_columnHeaderInstalled.text = "Current";
-					_columnHeaderLatest.text    = "Newest";
+					_columnHeaderLatest.text = "Newest";
 
 					break;
 				default:
 					// WTF, Should never be set to Disabled!!
 					throw new ArgumentException("SotAA.UI.Mods.Manager bad SwitchListClicked mode provided");
+
 					break;
 			}
 
@@ -381,16 +400,16 @@ namespace SotaAssistant.UI.Mods
 		}
 
 		private void StartLauncherClicked()
-        {
+		{
 			throw new NotImplementedException();
 			if (_startLauncher.visible)
-            {
+			{
 				;
 			}
 		}
 
-        private void StartSotAClicked()
-        {
+		private void StartSotAClicked()
+		{
 			throw new NotImplementedException();
 			if (_startSotA.visible)
 			{
@@ -399,10 +418,121 @@ namespace SotaAssistant.UI.Mods
 
 		}
 
-		public static IEnumerator UpdateMod(int id, InstalledMod[] installedMds, Action<bool> completed)
+		public static IEnumerator UpdateMod(int id, bool doOnce, Action<bool> completed)
 		{
-			throw new NotImplementedException();
-			yield break;
+			if (_alreadyDownloading)
+			{
+				yield break;
+			}
+			else
+			{
+				_alreadyDownloading = true;
+			}
+
+			//get the mod info from the web server
+			Mod[] tempMod = new Mod[1];
+
+			// ReSharper disable once StringLiteralTypo
+			var www = UnityWebRequest.Get(WebSiteUrl + "getmods.php?update=1&request=" + id);
+			//Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecificPublicKey.cs script
+			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
+			var connection = www.SendWebRequest();
+
+			while (!connection.isDone)
+			{
+				yield return null;
+			}
+
+			if (www.result == UnityWebRequest.Result.ConnectionError)
+			{
+				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
+
+			}
+			else if (www.result == UnityWebRequest.Result.ProtocolError)
+			{
+				Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
+			}
+			else
+			{
+				string jsonString = FixJson(www.downloadHandler.text);
+				Debug.Log(jsonString);
+				if (jsonString != null)
+				{
+					tempMod = JsonHelper.FromJson<Mod>(@jsonString);
+				}
+			}
+
+			Debug.Log(tempMod[0].url);
+			// Update the mod with the new info
+			www = UnityWebRequest.Get(WebSiteUrl + "mods/" + tempMod[0].url);
+			// Use this if you have any problem with a certificat, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
+			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
+			connection             = www.SendWebRequest();
+
+			while (!connection.isDone)
+			{
+				yield return null;
+			}
+
+			if (www.result == UnityWebRequest.Result.ConnectionError)
+			{
+				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
+
+			}
+			else if (www.result == UnityWebRequest.Result.ProtocolError)
+			{
+				Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
+			}
+			else
+			{
+				byte[] results     = www.downloadHandler.data;
+				string zipSavePath = Main.ModsSavedBackupPath;
+				string extractPath = Main.LuaPath;
+
+				File.WriteAllBytes(zipSavePath + tempMod[0].url, results);
+				using (ZipArchive archive = ZipFile.Open(zipSavePath + tempMod[0].url, ZipArchiveMode.Update))
+				{
+					ZipArchiveExtensions.ExtractToDirectory(archive, extractPath, true);
+				}
+
+				for (int i = 0; i < InstalledMods.Length; i++)
+				{
+					if (InstalledMods[i].title == tempMod[0].title ||
+						InstalledMods[i].folder == tempMod[0].folder ||
+						InstalledMods[i].file  == tempMod[0].file)
+					{
+						InstalledMods[i].creator   = tempMod[0].creator;
+						InstalledMods[i].title     = tempMod[0].title;
+						InstalledMods[i].desc      = tempMod[0].desc;
+						InstalledMods[i].version   = tempMod[0].version;
+						InstalledMods[i].deps      = tempMod[0].deps;
+						InstalledMods[i].isdep     = tempMod[0].isdep;
+						InstalledMods[i].icon      = tempMod[0].icon;
+						InstalledMods[i].log       = tempMod[0].log;
+						InstalledMods[i].folder    = tempMod[0].folder;
+						InstalledMods[i].file      = tempMod[0].file;
+						InstalledMods[i].backupzip = tempMod[0].url;
+
+						//_installedMods[x].enabled = tempMod[0].enabled; //default is the mod currently installed
+						if (!InstalledMods[i].enabled)
+						{
+							// Copy lua to disabled
+							File.Move(Main.LuaPath + InstalledMods[i].file,
+									  Main.ModsSavedDisabledPath + InstalledMods[i].file
+									  );
+						}
+
+						break;
+					}
+				}
+
+				File.WriteAllText(Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
+
+				// fully complete, write it down the cfg file
+			}
+
+			completed.Invoke(true);
+			_alreadyDownloading = false;
 		}
 	}
 }

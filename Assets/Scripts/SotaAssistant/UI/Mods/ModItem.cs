@@ -7,13 +7,16 @@ namespace SotaAssistant.UI.Mods
 {
 	public class ModItem : VisualElement
 	{
-		private Mod  _source;
-		private long _lastClick;
+		private Coroutine     _activeRoutine;
+		private bool          _completed = false;
+		private GameObject    _go;
+		private MonoBehaviour _monoBehaviour;
+		private Mod           _source;
 
 		public ModItem()
 		{
 			AddToClassList("list-item");
-
+			_monoBehaviour = new GameObject().AddComponent<MonoBehaviour>();
 		}
 
 		public void BindEntry(Mod entry)
@@ -49,7 +52,7 @@ namespace SotaAssistant.UI.Mods
 					latest.text = "Yes";
 					latest.AddToClassList("version-current");
 					installed.AddToClassList("version-current");
-					update.SetEnabled(false);
+					update.SetEnabled(true);
 				}
 				else
 				{
@@ -59,7 +62,8 @@ namespace SotaAssistant.UI.Mods
 				enable.text = entry.enabled ? "Disable" : "Enable";
 				enable.RegisterCallback<ClickEvent>(ClickedEnabled, TrickleDown.TrickleDown);
 				enable.AddToClassList("button-enabled");
-				//update.RegisterCallback(ClickedUpdate(update));
+				update.RegisterCallback<ClickEvent>(ClickedUpdate, TrickleDown.TrickleDown);
+				update.AddToClassList("button-enabled");
 				//remove.RegisterCallback<ClickEvent>(ev => ClickedRemove(remove));
 				//remove.AddToClassList("button-enabled");
 			}
@@ -72,21 +76,16 @@ namespace SotaAssistant.UI.Mods
 
 		private void ClickedEnabled(ClickEvent evt)
 		{
-#if PLATFORM_STANDALONE_LINUX
-			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
-			{
-				Debug.Log("Ignoring duplicate click event!");
-				return;
-			}
-			_lastClick = evt.timestamp;
+#if UNITY_STANDALONE_LINUX
+			Utilities.VoidDuplicateClick(evt);
 #endif
 
 			var enable = (Button)evt.target;
-
 			//var enable = this.Q<Button>("ButtonEnableDisable");
-			//Disable the button while we are processing it.
+
+			// Disable the button while we are processing it.
 			enable.SetEnabled(false);
-			// TODO handle enabling or disabling as needed
+
 			if (enable.text == "Enable")
 			{
 				var source = Main.ModsSavedDisabledPath + _source.file;
@@ -98,15 +97,14 @@ namespace SotaAssistant.UI.Mods
 					//Debug.Log("Trying to enable");
 					if (File.Exists(source))
 					{
-						//Debug.Log("Moving the file!");
+						Debug.Log("Moving the file!");
 						File.Move(@source, @target);
-						//Debug.Log("Moved?");
+						Debug.Log("Moved?");
 					}
 					else
 					{
 						Debug.Log("File not found!");
 					}
-
 				}
 				catch (Exception e)
 				{
@@ -114,6 +112,7 @@ namespace SotaAssistant.UI.Mods
 
 					throw;
 				}
+
 				for (int i = 0; i < Manager.InstalledMods.Length; i++)
 				{
 					if (Manager.InstalledMods[i].file == _source.file)
@@ -162,74 +161,31 @@ namespace SotaAssistant.UI.Mods
 
 				enable.text = "Enable";
 			}
+
 			Manager.SaveInstalledMods();
 
 			enable.SetEnabled(true);
 		}
 
-		private void ClickedDisabled(ClickEvent evt)
+		private void ClickedRemove(ClickEvent evt)
 		{
-#if PLATFORM_STANDALONE_LINUX
-			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
-			{
-				return;
-			}
-			_lastClick = evt.timestamp;
+#if UNITY_STANDALONE_LINUX
+			Utilities.VoidDuplicateClick(evt);
 #endif
-			var enable = (Button)evt.target;
-
-			enable.SetEnabled(false);
-			if (enable.text == "Disable")
-			{
-				var source = @Main.LuaPath               + _source.file;
-				var target = @Main.ModsSavedDisabledPath + _source.file;
-				//Debug.Log("Source: "             + source);
-				//Debug.Log("Target: "             + target);
-				try
-				{
-					Debug.Log("Trying to disable");
-					if (File.Exists(source))
-					{
-						Debug.Log("Moving the file!");
-						File.Move(@source, @target);
-						Debug.Log("Moved?");
-					}
-					else
-					{
-						Debug.Log("File not found!");
-					}
-
-				}
-				catch (Exception e)
-				{
-					Debug.Log(e);
-
-					throw;
-				}
-
-				for (int i = 0; i < Manager.InstalledMods.Length; i++)
-				{
-					if (Manager.InstalledMods[i].file == _source.file)
-					{
-						Manager.InstalledMods[i].enabled = false;
-					}
-				}
-
-				enable.text = "Enable";
-				enable.UnregisterCallback<ClickEvent>(ClickedDisabled);
-				enable.RegisterCallback<ClickEvent>(ClickedEnabled, TrickleDown.TrickleDown);
-				Manager.SaveInstalledMods();
-			}
-
-			enable.SetEnabled(true);
 		}
 
-		private void ClickedRemove(Button remove)
+		private void ClickedUpdate(ClickEvent evt)
 		{
-		}
+#if UNITY_STANDALONE_LINUX
+			Utilities.VoidDuplicateClick(evt);
+#endif
+			Debug.Log("ModItem: ClickedUpdate");
 
-		private void ClickedUpdate(Button update)
-		{
+			var update = (Button)evt.target;
+			update.SetEnabled(false);
+			_completed     = false;
+
+			_activeRoutine = _monoBehaviour.StartCoroutine(Manager.UpdateMod(_source.id, true, value => _completed = value));
 		}
 	}
 }
