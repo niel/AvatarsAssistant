@@ -1,6 +1,6 @@
 using UnityEngine.Networking;
 
-namespace SotaAssistant.Web
+namespace AAA.Utility
 {
 	public class AcceptAllCertificatesSignedWithASpecificKeyPublicKey : CertificateHandler
 	{

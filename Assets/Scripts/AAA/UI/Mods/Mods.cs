@@ -1,4 +1,4 @@
-namespace SotaAssistant.UI.Mods
+namespace AAA.UI.Mods
 {
 	public enum Mods
 	{

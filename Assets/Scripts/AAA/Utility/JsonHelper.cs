@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace SotaAssistant.Utility
+namespace AAA.Utility
 {
 	public class JsonHelper
 	{

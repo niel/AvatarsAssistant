@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SotaAssistant
+namespace AAA
 {
 	public class ScreenManager : MonoBehaviour
 	{

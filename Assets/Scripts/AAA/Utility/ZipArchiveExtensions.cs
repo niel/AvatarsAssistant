@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 
 
-namespace SotaAssistant.Utility
+namespace AAA.Utility
 {
 	public static class ZipArchiveExtensions
 	{

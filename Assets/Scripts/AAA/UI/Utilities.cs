@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SotaAssistant.UI
+namespace AAA.UI
 {
 
 	public class Utilities

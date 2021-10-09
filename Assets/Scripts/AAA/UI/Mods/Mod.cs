@@ -1,6 +1,6 @@
 using System;
 
-namespace SotaAssistant.UI.Mods
+namespace AAA.UI.Mods
 {
 	/// <summary>
 	/// Represents a Mod listed on shroudmods.com

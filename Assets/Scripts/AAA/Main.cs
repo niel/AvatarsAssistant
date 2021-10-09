@@ -3,13 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using AAA.Logs;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
-namespace SotaAssistant
+namespace AAA
 {
 	public class Main : MonoBehaviour
 	{
-		private const  bool   _testing = true;
+		private const bool   Testing         = true;
+		private const string ChatLogsPattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
 
 		private static   string       _chatLogsPath;
 		private static   string       _luaPath;
@@ -18,7 +21,7 @@ namespace SotaAssistant
 		private static   string       _modsSavedBackupPath;
 		private static   string       _modsSavedDisabledPath;
 		private readonly string       _sotaAppPath;
-		public           List<string> users;
+		public           List<string> users = new List<string>();
 
 		public string SotaAppPath { get { return _sotaAppPath; }}
 
@@ -38,7 +41,7 @@ namespace SotaAssistant
 		public Main()
 		{
 			#region Configure files and paths.
-			string sotaDirectory = _testing
+			string sotaDirectory = Testing
 									   ? @"/Portalarium/Shroud of the Avatar(QA)/"
 									   : @"/Portalarium/Shroud of the Avatar/";
 			string baseAppInstallLocation;
@@ -101,24 +104,55 @@ namespace SotaAssistant
 				File.CreateText(ModsInstalled);
 			}
 			#endregion
-
-			users = new List<string>();
-			Users();
 		}
 
-		public void Users()
+		private void ProcessLogs(string avatar)
 		{
-			string[] files     = Directory.GetFiles(Main.ChatLogsPath);
-			var pattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
+			var pattern   = "SotAChatLog_" + avatar + "*.txt";
+			var filteredChatLogs = Directory.EnumerateFiles(ChatLogsPath, @pattern);
+
+			var parser = new Parser(avatar, ChatLogsPath + "SotAChatLog_Archer_2021-10-05.txt");
+/*
+
+			foreach (var file in filteredChatLogs)
+			{
+				//Debug.Log("File: " + file);
+				var fileProps = new FileInfo(file);
+				//var match     = Regex.Match(fileProps.Name, ChatLogsPattern);
+				var parser = new Parser(file);
+			}
+*/
+		}
+
+		private void Start()
+		{
+			InitialiseUsers();
+
+			TempLinkingLogic();
+		}
+
+		private void TempLinkingLogic()
+		{
+			ProcessLogs(users.First());
+		}
+
+		private void Update()
+		{
+			//throw new NotImplementedException();
+		}
+
+		public void InitialiseUsers()
+		{
+			string[] files     = Directory.GetFiles(ChatLogsPath);
 			users.Clear();
-			foreach (string file in files)
+			foreach (var file in files)
 			{
 				var fileProps = new FileInfo(file);
-				var match     = Regex.Match(fileProps.Name, @pattern, RegexOptions.IgnoreCase);
+				var match     = Regex.Match(fileProps.Name, ChatLogsPattern, RegexOptions.IgnoreCase);
 				var user      = match.Groups["name"].ToString();
 				if (match.Success && !users.Contains(user))
 				{
-					Debug.Log("Adding name: " + user);
+					//Debug.Log("Adding name: " + user);
 					users.Add(user);
 				}
 			}

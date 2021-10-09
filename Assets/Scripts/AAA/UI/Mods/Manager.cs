@@ -9,18 +9,18 @@
 // @author Archer
 //
 
-using SotaAssistant.Utility;
-using SotaAssistant.Web;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using AAA.Utility;
+using AAA.Web;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Networking;
 
-namespace SotaAssistant.UI.Mods
+namespace AAA.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{

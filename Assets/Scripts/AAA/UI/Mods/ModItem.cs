@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace SotaAssistant.UI.Mods
+namespace AAA.UI.Mods
 {
 	public class ModItem : VisualElement
 	{
