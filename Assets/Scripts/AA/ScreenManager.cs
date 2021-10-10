@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace AAA
+namespace AA
 {
 	public class ScreenManager : MonoBehaviour
 	{

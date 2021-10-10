@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace AAA.Utility
+namespace AA.Utility
 {
 	public class JsonHelper
 	{

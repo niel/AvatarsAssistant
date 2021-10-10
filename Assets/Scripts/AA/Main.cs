@@ -3,39 +3,39 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using AAA.Logs;
+using AA.Logs;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace AAA
+namespace AA
 {
 	public class Main : MonoBehaviour
 	{
 		private const bool   Testing         = true;
 		private const string ChatLogsPattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
 
-		private static   string       _chatLogsPath;
-		private static   string       _luaPath;
-		private static   string       _modsInstalled;
-		private static   string       _modsSavedPath;
-		private static   string       _modsSavedBackupPath;
-		private static   string       _modsSavedDisabledPath;
-		private readonly string       _sotaAppPath;
-		public           List<string> users = new List<string>();
-
-		public string SotaAppPath { get { return _sotaAppPath; }}
-
-		public static string ModsInstalled { get { return _modsInstalled; }}
+		private static string       _chatLogsPath;
+		private static string       _luaPath;
+		private static string       _modsInstalled;
+		private static string       _modsSavedPath;
+		private static string       _modsSavedBackupPath;
+		private static string       _modsSavedDisabledPath;
+		private static string       _sotaAppPath;
+		public         List<string> users = new List<string>();
 
 		public static string ChatLogsPath { get { return _chatLogsPath; }}
 
 		public static string LuaPath { get { return _luaPath; }}
 
-		public static string ModsSavedPath { get { return _modsSavedPath; }}
+		public static string ModsInstalled { get { return _modsInstalled; }}
 
 		public static string ModsSavedBackupPath { get { return _modsSavedBackupPath; }}
 
 		public static string ModsSavedDisabledPath { get { return _modsSavedDisabledPath; }}
+
+		public static string ModsSavedPath { get { return _modsSavedPath; }}
+
+		public static string SotaAppPath { get { return _sotaAppPath; }}
 
 
 		public Main()

@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 
 
-namespace AAA.Utility
+namespace AA.Utility
 {
 	public static class ZipArchiveExtensions
 	{

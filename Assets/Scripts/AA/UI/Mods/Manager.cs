@@ -15,13 +15,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using AAA.Utility;
-using AAA.Web;
+using AA.Utility;
+using AA.Web;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Networking;
 
-namespace AAA.UI.Mods
+namespace AA.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{

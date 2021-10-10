@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using AAA.UI.Mods;
+using AA.UI.Mods;
 
-namespace AAA.Web
+namespace AA.Web
 {
 	[Serializable]
 	public class DownloadStack

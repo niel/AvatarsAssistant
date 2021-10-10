@@ -1,6 +1,6 @@
 using UnityEngine.Networking;
 
-namespace AAA.Web
+namespace AA.Web
 {
 	public class AcceptAllCertificatesSignedWithASpecificKeyPublicKey : CertificateHandler
 	{

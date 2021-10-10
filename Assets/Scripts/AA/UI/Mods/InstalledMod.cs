@@ -1,6 +1,6 @@
 using System;
 
-namespace AAA.UI.Mods
+namespace AA.UI.Mods
 {
 	/// <summary>
 	/// Represents a Mod that has been installed locally.

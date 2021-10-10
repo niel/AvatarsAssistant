@@ -3,33 +3,32 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace AAA.UI.Mods
+namespace AA.UI.Mods
 {
 	public class ModItem : VisualElement
 	{
-		private Coroutine     _activeRoutine;
-		private bool          _completed = false;
-		private GameObject    _go;
-		private MonoBehaviour _monoBehaviour;
-		private Mod           _source;
+		private          Coroutine  _activeRoutine;
+		private          bool       _completed = false;
+		private          GameObject _go;
+		private readonly Manager    _manager;
+		private          Mod        _source;
 
 		public ModItem()
 		{
 			AddToClassList("list-item");
-			_monoBehaviour = new GameObject().AddComponent<MonoBehaviour>();
+			var mb = new GameObject().AddComponent<MonoBehaviour>();
+			_manager = mb.GetComponent<Manager>();
 		}
 
 		public void BindEntry(Mod entry)
 		{
 			_source = entry;
-			//mb      = gameObject.AddComponent<MonoBehaviour>();
 
 			if (entry.title != "NoModsFound")
 			{
 				var modItemTemplate = Resources.Load<VisualTreeAsset>("UI/Mods/ModItem");
 				Add(modItemTemplate.Instantiate());
 
-				//this.name = "listEntry-" + entry.title;
 				var title     = this.Q<Label>("Name");
 				var desc      = this.Q<Label>("Description");
 				var installed = this.Q<Label>("Installed");
@@ -64,8 +63,8 @@ namespace AAA.UI.Mods
 				enable.AddToClassList("button-enabled");
 				update.RegisterCallback<ClickEvent>(ClickedUpdate, TrickleDown.TrickleDown);
 				update.AddToClassList("button-enabled");
-				//remove.RegisterCallback<ClickEvent>(ev => ClickedRemove(remove));
-				//remove.AddToClassList("button-enabled");
+				remove.RegisterCallback<ClickEvent>(ClickedRemove, TrickleDown.TrickleDown);
+				remove.AddToClassList("button-enabled");
 			}
 			else
 			{
@@ -172,6 +171,7 @@ namespace AAA.UI.Mods
 #if UNITY_STANDALONE_LINUX
 			Utilities.VoidDuplicateClick(evt);
 #endif
+			_manager.RemoveMod(_source);
 		}
 
 		private void ClickedUpdate(ClickEvent evt)
@@ -185,7 +185,7 @@ namespace AAA.UI.Mods
 			update.SetEnabled(false);
 			_completed     = false;
 
-			_activeRoutine = _monoBehaviour.StartCoroutine(Manager.UpdateMod(_source.id, true, value => _completed = value));
+			_activeRoutine = _manager.StartCoroutine(_manager.UpdateMod(_source.id, true, value => _completed = value));
 		}
 	}
 }

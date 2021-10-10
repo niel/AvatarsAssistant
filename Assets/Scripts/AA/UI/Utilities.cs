@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace AAA.UI
+namespace AA.UI
 {
 
 	public class Utilities

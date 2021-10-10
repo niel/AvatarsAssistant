@@ -1,4 +1,4 @@
-namespace AAA.UI.Mods
+namespace AA.UI.Mods
 {
 	public enum Mods
 	{
