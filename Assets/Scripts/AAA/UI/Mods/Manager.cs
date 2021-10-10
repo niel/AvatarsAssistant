@@ -14,6 +14,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using AAA.Utility;
 using AAA.Web;
 using UnityEngine;
@@ -24,10 +25,10 @@ namespace AAA.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{
-		private const string WebSiteUrl = "https://shroudmods.com/";
-
 		private const string NothingFoundJson =
 			@"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
+
+		private const string WebSiteUrl = "https://shroudmods.com/";
 
 		private static bool   _alreadyDownloading;
 		private        bool   _alreadyRefreshing;
@@ -364,6 +365,42 @@ namespace AAA.UI.Mods
 			throw new NotImplementedException();
 		}
 
+		public void RemoveMod(Mod mod)
+		{
+			if (File.Exists(Main.ModsSavedBackupPath + mod.url))
+			{
+				File.Delete(Main.ModsSavedBackupPath + mod.url);
+			}
+
+			if (File.Exists(Main.ModsSavedDisabledPath + mod.file))
+			{
+				File.Delete(Main.ModsSavedDisabledPath + mod.file);
+			}
+
+			if (File.Exists(Main.LuaPath + mod.file))
+			{
+				File.Delete(Main.LuaPath + mod.file);
+			}
+
+			if (Directory.Exists(Main.LuaPath + mod.folder))
+			{
+				Directory.Delete(Main.LuaPath + mod.folder, true);
+			}
+
+			var tempList = InstalledMods.ToList();
+			foreach (var entry in tempList)
+			{
+				if (entry.title == mod.title)
+				{
+					tempList.Remove(entry);
+					break;
+				}
+			}
+
+			InstalledMods = tempList.ToArray();
+			CheckInstalledMods();
+		}
+
 		public static void SaveInstalledMods()
 		{
 			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
@@ -418,7 +455,7 @@ namespace AAA.UI.Mods
 
 		}
 
-		public static IEnumerator UpdateMod(int id, bool doOnce, Action<bool> completed)
+		public IEnumerator UpdateMod(int id, bool doOnce, Action<bool> completed)
 		{
 			if (_alreadyDownloading)
 			{
