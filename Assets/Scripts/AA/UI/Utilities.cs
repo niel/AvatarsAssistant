@@ -3,7 +3,6 @@ using UnityEngine.UIElements;
 
 namespace AA.UI
 {
-
 	public class Utilities
 	{
 		private static long _lastClick;
@@ -21,14 +20,16 @@ namespace AA.UI
 		}
 
 #if UNITY_STANDALONE_LINUX
-		public static void VoidDuplicateClick(ClickEvent evt)
+		public static bool VoidDuplicateClick(ClickEvent evt)
 		{
 			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
 			{
-				Debug.Log("Ignoring duplicate click event!");
-				return;
+				return true;
 			}
+
 			_lastClick = evt.timestamp;
+
+			return false;
 		}
 #endif
 	}

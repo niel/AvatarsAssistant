@@ -25,6 +25,8 @@ namespace AA.UI.Mods
 {
 	public class Manager : MonoBehaviour
 	{
+		#region constants and variables
+
 		private const string NothingFoundJson =
 			@"{""Items"":[{""id"": 0,""creator"": ""Archer"",""title"": ""NoModsFound"",""desc"": ""Dummy entry for empty list"",""version"": ""1.0"",""url"": "" "",""deps"": "" "",""isdep"": false,""icon"": 1,""log"": 1,""clean"": 0,""folder"": ""dummy"",""file"": ""dummy.lua"",""backupzip"": "" "",""enabled"": false}]}";
 
@@ -41,14 +43,14 @@ namespace AA.UI.Mods
 		private        Button _startLauncher;
 		private        Button _startSotA;
 
-		private VisualElement _listContainer;
-		private Mods          _listMode;
+		private  VisualElement _listContainer;
+		internal Mods          listMode;
 
 		public Mod[] deps;
 		public Mod[] mods;
 
-		public List<Mod>
-			modsList; // List bound to ListView for displaying the others (installedModsList, mods, deps, etc.).
+		// List bound to ListView for displaying the others (installedModsList, mods, deps, etc.).
+		public List<Mod> modsList;
 
 		private ListView _listViewContent;
 
@@ -68,13 +70,18 @@ namespace AA.UI.Mods
 		private string _versions;
 		private bool   _fetchingVersions;
 
+		#endregion
 
 		private void CheckAvailableModList()
 		{
-			if (_listMode == Mods.Installed)
+			if (listMode == Mods.Installed)
 			{
 				throw new InvalidDataException("Incorrect Mode when calling CheckAvailableModList");
 			}
+
+			// Clear list.
+			modsList.Clear();
+			Debug.Log("CheckAvailableMods: modsList count: " + modsList.Count);
 
 			Debug.Log("Fetching list of mods from shroudmods.com.");
 			ActiveRoutine = StartCoroutine(FetchModList());
@@ -88,7 +95,7 @@ namespace AA.UI.Mods
 			// Destroy any previously created objects, before populating it again.
 			modsList.Clear();
 
-			// If there any mods found, we populate the list with them.
+			// If there are any mods found, we populate the list with them.
 			if (configText.Length > 0)
 			{
 				InstalledMods = JsonHelper.FromJson<InstalledMod>(@configText);
@@ -201,6 +208,8 @@ namespace AA.UI.Mods
 				_alreadyRefreshing = true;
 			}
 
+			Debug.Log("Manager - FetchModList: entry");
+
 			// Get list of mods first.
 			var www = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=mods");
 			www.certificateHandler =
@@ -220,11 +229,15 @@ namespace AA.UI.Mods
 					break;
 				default:
 					_jsonString = FixJson(www.downloadHandler.text);
-					Debug.Log("Mods: " + _jsonString);
+					Debug.Log("Manager - FetchModList: Mods: " + _jsonString);
 
 					mods = JsonHelper.FromJson<Mod>(_jsonString);
-					Debug.Log("Mods[]: " + mods.Length);
-					PopulateModsList(false);
+					Debug.Log("Manager - FetchModList: Mods[]: " + mods.Length);
+
+					//PopulateModsList(false);
+					modsList.AddRange(mods);
+					modsList.Sort();
+					Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
 
 					break;
 			}
@@ -246,14 +259,17 @@ namespace AA.UI.Mods
 					break;
 				default:
 					_jsonString = FixJson(www.downloadHandler.text);
-					Debug.Log("Deps: " + _jsonString);
+					Debug.Log("Manager - FetchModList: Deps: " + _jsonString);
 
 					if (_jsonString != null)
 					{
 						deps = JsonHelper.FromJson<Mod>(@_jsonString);
-						Debug.Log("Deps[]: " + deps.Length);
+						Debug.Log("Manager - FetchModList: Deps[]: " + deps.Length);
 
 						//PopulateModsList(getDependencies);
+						modsList.AddRange(deps);
+						modsList.Sort();
+						Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
 					}
 
 					break;
@@ -261,6 +277,7 @@ namespace AA.UI.Mods
 
 			yield return new WaitForSeconds(5);
 			_alreadyRefreshing = false;
+			_listViewContent.Rebuild();
 		}
 
 		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] installedModsList,
@@ -274,7 +291,13 @@ namespace AA.UI.Mods
 		/// </summary>
 		private void OnEnable()
 		{
-			_rootVE = GetComponent<UIDocument>().rootVisualElement;
+			_rootVE = GetComponent<UIDocument>().rootVisualElement.Q("ModManager");
+			if (_rootVE == null)
+			{
+				throw new Exception("ModManager - OnEnable: WTF!");
+			}
+
+			Debug.Log("OnEnable - RootVE: " + _rootVE);
 
 			#region Initialise elements for easy access.
 
@@ -288,7 +311,7 @@ namespace AA.UI.Mods
 			_startLauncher.visible = false;
 			_startSotA.visible     = false;
 
-			_listSwitcher.RegisterCallback<ClickEvent>(ev => SwitchListClicked());
+			_listSwitcher.RegisterCallback<ClickEvent>(SwitchListClicked, TrickleDown.TrickleDown);
 
 			// TODO add detection code for location of Launcher/SotA Binary. Enable buttons and callbacks if found.
 			//m_StartLauncher.RegisterCallback<ClickEvent>(ev => StartLauncherClicked());
@@ -296,10 +319,10 @@ namespace AA.UI.Mods
 
 			#endregion
 
-			#region Prepare the ListVew element.
+			#region Prepare the ListView element.
 
 			// The "makeItem" function is called when the ListView needs more items to render.
-			Func<VisualElement> makeItem = () => new ModItem();
+			Func<VisualElement> makeItem = () => new ModItem(this);
 
 			// As the user scrolls through the list, the ListView object recycles elements created by the "makeItem"
 			// function, and invokes the "bindItem" callback to associate the element with the matching data item
@@ -321,14 +344,14 @@ namespace AA.UI.Mods
 			#endregion
 
 			// Set the mode to Mods Available, then immediately flip it to cause the contents panel to update for Installed mods.
-			_listMode = Mods.Available;
+			listMode = Mods.Available;
 			SwitchListClicked();
 		}
 
-		private void PopulateModsList(bool getDependencies = false)
+		private void PopulateModsList()
 		{
 			// First we have to get our list of Mods. How we do that depends on the list we are interested in.
-			switch (_listMode)
+			switch (listMode)
 			{
 				case Mods.Installed:
 				{
@@ -393,6 +416,7 @@ namespace AA.UI.Mods
 				if (entry.title == mod.title)
 				{
 					tempList.Remove(entry);
+
 					break;
 				}
 			}
@@ -406,12 +430,25 @@ namespace AA.UI.Mods
 			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
 		}
 
+		private void SwitchListClicked(ClickEvent evt)
+		{
+#if UNITY_STANDALONE_LINUX
+			if (Utilities.VoidDuplicateClick(evt))
+			{
+				Debug.Log("Ignoring duplicate click event!");
+
+				return;
+			}
+#endif
+			SwitchListClicked();
+		}
+
 		private void SwitchListClicked()
 		{
-			switch (_listMode)
+			switch (listMode)
 			{
 				case Mods.Installed:
-					_listMode          = Mods.Available;
+					listMode           = Mods.Available;
 					_listSwitcher.text = "Installed Mods";
 
 					//_columnHeaderInstalled.text = "Current";
@@ -419,7 +456,7 @@ namespace AA.UI.Mods
 
 					break;
 				case Mods.Available:
-					_listMode          = Mods.Installed;
+					listMode           = Mods.Installed;
 					_listSwitcher.text = "Available Mods";
 
 					//_columnHeaderInstalled.text = "Current";
@@ -433,7 +470,7 @@ namespace AA.UI.Mods
 					break;
 			}
 
-			PopulateModsList(false);
+			PopulateModsList();
 		}
 
 		private void StartLauncherClicked()
@@ -452,7 +489,6 @@ namespace AA.UI.Mods
 			{
 				;
 			}
-
 		}
 
 		public IEnumerator UpdateMod(int id, bool doOnce, Action<bool> completed)
@@ -471,6 +507,7 @@ namespace AA.UI.Mods
 
 			// ReSharper disable once StringLiteralTypo
 			var www = UnityWebRequest.Get(WebSiteUrl + "getmods.php?update=1&request=" + id);
+
 			//Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecificPublicKey.cs script
 			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
 			var connection = www.SendWebRequest();
@@ -483,7 +520,6 @@ namespace AA.UI.Mods
 			if (www.result == UnityWebRequest.Result.ConnectionError)
 			{
 				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
-
 			}
 			else if (www.result == UnityWebRequest.Result.ProtocolError)
 			{
@@ -500,8 +536,10 @@ namespace AA.UI.Mods
 			}
 
 			Debug.Log(tempMod[0].url);
+
 			// Update the mod with the new info
 			www = UnityWebRequest.Get(WebSiteUrl + "mods/" + tempMod[0].url);
+
 			// Use this if you have any problem with a certificat, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
 			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
 			connection             = www.SendWebRequest();
@@ -514,7 +552,6 @@ namespace AA.UI.Mods
 			if (www.result == UnityWebRequest.Result.ConnectionError)
 			{
 				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
-
 			}
 			else if (www.result == UnityWebRequest.Result.ProtocolError)
 			{
@@ -534,9 +571,9 @@ namespace AA.UI.Mods
 
 				for (int i = 0; i < InstalledMods.Length; i++)
 				{
-					if (InstalledMods[i].title == tempMod[0].title ||
+					if (InstalledMods[i].title  == tempMod[0].title  ||
 						InstalledMods[i].folder == tempMod[0].folder ||
-						InstalledMods[i].file  == tempMod[0].file)
+						InstalledMods[i].file   == tempMod[0].file)
 					{
 						InstalledMods[i].creator   = tempMod[0].creator;
 						InstalledMods[i].title     = tempMod[0].title;
@@ -554,9 +591,9 @@ namespace AA.UI.Mods
 						if (!InstalledMods[i].enabled)
 						{
 							// Copy lua to disabled
-							File.Move(Main.LuaPath + InstalledMods[i].file,
+							File.Move(Main.LuaPath               + InstalledMods[i].file,
 									  Main.ModsSavedDisabledPath + InstalledMods[i].file
-									  );
+									 );
 						}
 
 						break;
