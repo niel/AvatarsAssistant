@@ -1,4 +1,19 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <ui:Template name="ModManager" src="project://database/Assets/Resources/UI/Mods/ModManager.uxml?fileID=9197481963319205126&amp;guid=025862674caf0a278814a744f23a5394&amp;type=3#ModManager" />
-    <ui:Instance template="ModManager" name="ModManager" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+		 xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements"
+		 noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+	<ui:Template name="StartWindow"
+				 src="project://database/Assets/Resources/UI/StartDialogue.uxml?fileID=9197481963319205126&amp;guid=51b551ca3613f4125b45588f0b9d3da1&amp;type=3#StartDialogue"/>
+	<ui:Template name="MainScreen"
+				 src="project://database/Assets/Resources/UI/MainScreen.uxml?fileID=9197481963319205126&amp;guid=6c6e7af86409eb15cbb6537de2a36ef4&amp;type=3#MainScreen"/>
+	<ui:Template name="ModManager"
+				 src="project://database/Assets/Resources/UI/Mods/ModManager.uxml?fileID=9197481963319205126&amp;guid=025862674caf0a278814a744f23a5394&amp;type=3#ModManager"/>
+	<ui:VisualElement name="ScreenManager"
+					  style="-unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); display: flex; visibility: visible; background-image: resource(&apos;Images/SotA_MountainPass&apos;);">
+		<ui:Instance template="StartWindow" name="StartWindow"
+					 style="display: none; width: 100%; padding-left: 25%; padding-right: 25%; padding-top: 25%; padding-bottom: 25%; flex-direction: column; justify-content: center; align-items: stretch; visibility: hidden;"/>
+		<ui:Instance template="MainScreen" name="MainScreen"
+					 style="height: 809px; display: flex; visibility: visible;"/>
+		<ui:Instance template="ModManager" name="ModManager"
+					 style="display: none; width: 100%; height: 100%; visibility: hidden;"/>
+	</ui:VisualElement>
 </ui:UXML>

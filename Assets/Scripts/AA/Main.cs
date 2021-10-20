@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using AA.Logs;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace AA
 {
@@ -16,31 +15,53 @@ namespace AA
 
 		private static string       _chatLogsPath;
 		private static string       _luaPath;
-		private static string       _modsInstalled;
+		private static string       _modsInstalledFile;
 		private static string       _modsSavedPath;
 		private static string       _modsSavedBackupPath;
 		private static string       _modsSavedDisabledPath;
 		private static string       _sotaAppPath;
 		public         List<string> users = new List<string>();
 
-		public static string ChatLogsPath { get { return _chatLogsPath; }}
+		public static string ChatLogsPath
+		{
+			get { return _chatLogsPath; }
+		}
 
-		public static string LuaPath { get { return _luaPath; }}
+		public static string LuaPath
+		{
+			get { return _luaPath; }
+		}
 
-		public static string ModsInstalled { get { return _modsInstalled; }}
+		public static string ModsInstalledFile
+		{
+			get { return _modsInstalledFile; }
+		}
 
-		public static string ModsSavedBackupPath { get { return _modsSavedBackupPath; }}
+		public static string ModsSavedBackupPath
+		{
+			get { return _modsSavedBackupPath; }
+		}
 
-		public static string ModsSavedDisabledPath { get { return _modsSavedDisabledPath; }}
+		public static string ModsSavedDisabledPath
+		{
+			get { return _modsSavedDisabledPath; }
+		}
 
-		public static string ModsSavedPath { get { return _modsSavedPath; }}
+		public static string ModsSavedPath
+		{
+			get { return _modsSavedPath; }
+		}
 
-		public static string SotaAppPath { get { return _sotaAppPath; }}
+		public static string SotaAppPath
+		{
+			get { return _sotaAppPath; }
+		}
 
 
 		public Main()
 		{
 			#region Configure files and paths.
+
 			string sotaDirectory = Testing
 									   ? @"/Portalarium/Shroud of the Avatar(QA)/"
 									   : @"/Portalarium/Shroud of the Avatar/";
@@ -59,12 +80,15 @@ namespace AA
 
 					break;
 			}
-			_sotaAppPath = @baseAppInstallLocation + @sotaDirectory;
+
+			_sotaAppPath  = @baseAppInstallLocation + @sotaDirectory;
 			_chatLogsPath = SotaAppPath             + @"ChatLogs/";
 			_luaPath      = SotaAppPath             + @"Lua/";
 
 			#region Directory Checks
+
 			_modsSavedPath = SotaAppPath + @"SavedMods/";
+
 			// Check that necessary directories and files exist.
 			if (!Directory.Exists(ModsSavedPath))
 			{
@@ -82,6 +106,7 @@ namespace AA
 			{
 				Directory.CreateDirectory(ModsSavedDisabledPath);
 			}
+
 			#endregion
 
 			/*
@@ -98,17 +123,20 @@ namespace AA
 			*/
 
 			// Check if the installed mods config file is there, if not we create it.
-			_modsInstalled = ModsSavedPath + @"InstalledMods.cfg";
-			if (!File.Exists(ModsInstalled))
+			_modsInstalledFile = ModsSavedPath + @"InstalledMods.cfg";
+			if (!File.Exists(ModsInstalledFile))
 			{
-				File.CreateText(ModsInstalled);
+				File.CreateText(ModsInstalledFile);
 			}
+
 			#endregion
+
+			InitialiseUsers();
 		}
 
 		private void ProcessLogs(string avatar)
 		{
-			var pattern   = "SotAChatLog_" + avatar + "*.txt";
+			var pattern          = "SotAChatLog_" + avatar + "*.txt";
 			var filteredChatLogs = Directory.EnumerateFiles(ChatLogsPath, @pattern);
 
 			var parser = new Parser(avatar, ChatLogsPath + "SotAChatLog_Archer_2021-10-05.txt");
@@ -126,9 +154,9 @@ namespace AA
 
 		private void Start()
 		{
-			InitialiseUsers();
+			//InitialiseUsers();
 
-			TempLinkingLogic();
+			//TempLinkingLogic();
 		}
 
 		private void TempLinkingLogic()
@@ -143,7 +171,7 @@ namespace AA
 
 		public void InitialiseUsers()
 		{
-			string[] files     = Directory.GetFiles(ChatLogsPath);
+			string[] files = Directory.GetFiles(ChatLogsPath);
 			users.Clear();
 			foreach (var file in files)
 			{
@@ -156,6 +184,7 @@ namespace AA
 					users.Add(user);
 				}
 			}
+
 			users.Sort();
 		}
 	}

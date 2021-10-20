@@ -1,20 +1,26 @@
 using System;
 using System.IO;
+using AA.Web;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace AA.UI.Mods
 {
+	public delegate void InstallComplete();
+
 	public class ModItem : VisualElement
 	{
-		private          Coroutine _activeRoutine;
-		private          Button    _button1;
-		private          Button    _button2;
-		private          Button    _button3;
-		private          bool      _completed = false;
-		private          string    _lastClick;
-		private readonly Manager   _manager;
-		private          Mod       _source;
+		// ReSharper disable once NotAccessedField.Local
+		private Coroutine _activeRoutine;
+		private Button    _button1;
+		private Button    _button2;
+		private Button    _button3;
+
+		// ReSharper disable once NotAccessedField.Local
+		private          bool          _completed = false;
+		private          DownloadStack _downloadStack;
+		private readonly Manager       _manager;
+		private          Mod           _source;
 
 		public Label desc;
 		public Label installed;
@@ -51,10 +57,8 @@ namespace AA.UI.Mods
 				_button2  = this.Q<Button>("ButtonUpdate");
 				_button3  = this.Q<Button>("ButtonRemove");
 
-				title.text     = _source.title;
-				desc.text      = _source.desc;
-				installed.text = _source.version;
-				latest.text    = _source.latest;
+				title.text = _source.title;
+				desc.text  = _source.desc;
 			}
 
 			if (_manager.listMode == Mods.Available)
@@ -69,7 +73,8 @@ namespace AA.UI.Mods
 
 		private void BindAvailable()
 		{
-			latest.text = _source.creator;
+			latest.text    = _source.version;
+			installed.text = _source.creator;
 			_button1.SetEnabled(false);
 			_button1.style.display = DisplayStyle.None;
 			_button3.SetEnabled(false);
@@ -82,6 +87,8 @@ namespace AA.UI.Mods
 
 		private void BindInstalled()
 		{
+			installed.text = _source.version;
+			latest.text    = _source.latest;
 			if (latest.text == "")
 			{
 				latest.text = "Fetching...";
@@ -128,12 +135,6 @@ namespace AA.UI.Mods
 
 			//var enable = this.Q<Button>("ButtonEnableDisable");
 			var enable = (Button) evt.target;
-/*
-			if (_lastClick == enable.text)
-			{
-				return;
-			}
-*/
 
 			// Disable the button while we are processing it.
 			enable.SetEnabled(false);
@@ -167,11 +168,11 @@ namespace AA.UI.Mods
 					throw;
 				}
 
-				for (int i = 0; i < Manager.InstalledMods.Length; i++)
+				for (int i = 0; i < Manager.installedMods.Length; i++)
 				{
-					if (Manager.InstalledMods[i].file == _source.file)
+					if (Manager.installedMods[i].file == _source.file)
 					{
-						Manager.InstalledMods[i].enabled = true;
+						Manager.installedMods[i].enabled = true;
 					}
 				}
 
@@ -206,11 +207,11 @@ namespace AA.UI.Mods
 					throw;
 				}
 
-				for (int i = 0; i < Manager.InstalledMods.Length; i++)
+				for (int i = 0; i < Manager.installedMods.Length; i++)
 				{
-					if (Manager.InstalledMods[i].file == _source.file)
+					if (Manager.installedMods[i].file == _source.file)
 					{
-						Manager.InstalledMods[i].enabled = false;
+						Manager.installedMods[i].enabled = false;
 					}
 				}
 
@@ -219,7 +220,6 @@ namespace AA.UI.Mods
 
 			Manager.SaveInstalledMods();
 
-			_lastClick = enable.text;
 			enable.SetEnabled(true);
 		}
 
@@ -233,7 +233,59 @@ namespace AA.UI.Mods
 				return;
 			}
 #endif
-			;
+
+			var button = (Button) evt.target;
+
+			// Disable the button while we are processing it.
+			button.SetEnabled(false);
+			button.text = "Installing...";
+
+			_downloadStack = new DownloadStack();
+			if (_source.deps.Length > 1)
+			{
+				if (_source.deps.Contains(';'))
+				{
+					Debug.Log("ModItem - Install: Adding multiple dependencies");
+					var deps = _source.deps.Split(';');
+					for (var i = 0; i < deps.Length; i++)
+					{
+						for (int j = 0; j < _source.deps.Length; j++)
+						{
+							_downloadStack.Add(deps[i], _manager.deps[j], _source);
+						}
+					}
+				}
+				else
+				{
+					Debug.Log("ModItem - Install: Adding single dependency");
+					_downloadStack.Add(_source.deps, _manager.deps[0], _source);
+				}
+			}
+			else
+			{
+				Debug.Log("ModItem - Install: No dependencies to add.");
+			}
+
+			_downloadStack.deps.Add(_source.url);
+			if (_source.isdep)
+			{
+				//downloadStack.mods.Add(_manager.deps[_source.id - 1]);
+			}
+			else
+			{
+				_downloadStack.mods.Add(_manager.mods[_source.id - 1]);
+			}
+
+			//Debug.Log("Button click: " + _source.modId);
+
+			_completed = false;
+			Debug.Log("ModItem - Install, total files to download: " + _downloadStack.deps.Count);
+			_downloadStack.totalphase = _downloadStack.deps.Count; // * 2 = download + install
+			_activeRoutine =
+				_manager.StartCoroutine(Manager.FetchModArchive(_downloadStack, CompletedIntall));
+			_manager.downloading = true;
+
+			//Debug.Log("ModItem total phase: " + downloadStack.totalphase);
 		}
 
 		private void ClickedRemove(ClickEvent evt)
@@ -266,6 +318,14 @@ namespace AA.UI.Mods
 			_completed = false;
 
 			_activeRoutine = _manager.StartCoroutine(_manager.UpdateMod(_source.id, true, value => _completed = value));
+		}
+
+		private void CompletedIntall()
+		{
+			_manager.downloading = false;
+			_button2.text        = "Installed";
+			_button2.SetEnabled(false);
+			_button2.RemoveFromClassList("button-enabled");
 		}
 	}
 }

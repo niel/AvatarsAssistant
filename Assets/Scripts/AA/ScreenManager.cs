@@ -8,7 +8,7 @@ namespace AA
 {
 	public class ScreenManager : MonoBehaviour
 	{
-		internal static VisualElement RootVe;
+		internal static VisualElement rootVe;
 		private         MonoBehaviour _activeScript;
 		private         DropdownField _avatars;
 		private         int           _avatarIndex;
@@ -18,32 +18,28 @@ namespace AA
 		private         VisualElement _startDialogue;
 		private         VisualElement _startWindow;
 
-		public Main Main;
-
-		public ScreenManager()
-		{
-		}
+		public Main main;
 
 		private void Start()
 		{
-			Main = new GameObject().AddComponent<Main>();
-			if (Main == null)
+			main = new GameObject().AddComponent<Main>();
+			if (main == null)
 			{
 				throw new InvalidProgramException("ScreenManager: Failed to instantiate Main settings");
 			}
-			else if (Main.users.Count < 1)
+			else if (main.users.Count < 1)
 			{
 				throw new InvalidProgramException("ScreenManager: Instantiating Main failed to find users!!");
 			}
 
-			RootVe = GetComponent<UIDocument>().rootVisualElement;
-			if (RootVe != null)
+			rootVe = GetComponent<UIDocument>().rootVisualElement;
+			if (rootVe != null)
 			{
 				//Debug.Log("ScreenManager - RootVE: " + RootVe);
-				_startDialogue = RootVe.Q<VisualElement>("StartDialogue");
-				_startWindow   = RootVe.Q<VisualElement>("StartWindow");
-				_mainScreen    = RootVe.Q<VisualElement>("MainScreen");
-				_modsScreen    = RootVe.Q<VisualElement>("ModManager");
+				_startDialogue = rootVe.Q<VisualElement>("StartDialogue");
+				_startWindow   = rootVe.Q<VisualElement>("StartWindow");
+				_mainScreen    = rootVe.Q<VisualElement>("MainScreen");
+				_modsScreen    = rootVe.Q<VisualElement>("ModManager");
 
 				//ShowStartDialogue();
 
@@ -91,7 +87,7 @@ namespace AA
 
 		private void ShowStartDialogue()
 		{
-			_avatars = RootVe.Q<DropdownField>("AvatarDropdown");
+			_avatars = rootVe.Q<DropdownField>("AvatarDropdown");
 			if (_avatars == null)
 			{
 				throw new
@@ -99,8 +95,8 @@ namespace AA
 			}
 
 			_avatarIndex     = 0;
-			_avatars.choices = Main.users;
-			_avatars.value   = Main.users[_avatarIndex];
+			_avatars.choices = main.users;
+			_avatars.value   = main.users[_avatarIndex];
 			_avatars.RegisterCallback<ChangeEvent<string>>(
 														   (evt) => { _avatars.value = evt.newValue; });
 			_avatars.SetEnabled(true);
@@ -116,10 +112,14 @@ namespace AA
 #if UNITY_EDITOR
 			if (Application.isPlaying)
 #endif
+			{
 				SceneManager.LoadSceneAsync(_sceneName);
+			}
 #if UNITY_EDITOR
 			else
+			{
 				Debug.Log("Loading: " + _sceneName);
+			}
 #endif
 		}
 	}

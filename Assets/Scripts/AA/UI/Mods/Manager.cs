@@ -56,16 +56,14 @@ namespace AA.UI.Mods
 
 		public VisualTreeAsset modItemTemplate;
 
-		public Coroutine ActiveRoutine;
+		private Coroutine _activeRoutine;
 
 		[HideInInspector] public bool downloading;
-
-		[HideInInspector] public DownloadStack downloadStack;
 
 		// ReSharper disable once InconsistentNaming
 		private VisualElement _rootVE;
 
-		public static InstalledMod[] InstalledMods;
+		public static InstalledMod[] installedMods;
 
 		private string _versions;
 		private bool   _fetchingVersions;
@@ -81,16 +79,17 @@ namespace AA.UI.Mods
 
 			// Clear list.
 			modsList.Clear();
-			Debug.Log("CheckAvailableMods: modsList count: " + modsList.Count);
 
-			Debug.Log("Fetching list of mods from shroudmods.com.");
-			ActiveRoutine = StartCoroutine(FetchModList());
+			//Debug.Log("CheckAvailableMods: modsList count: " + modsList.Count);
+
+			//Debug.Log("Fetching list of mods from shroudmods.com.");
+			_activeRoutine = StartCoroutine(FetchModList());
 		}
 
 		public void CheckInstalledMods()
 		{
 			// We get the list of mods from the config file
-			string configText = File.ReadAllText(@Main.ModsInstalled);
+			string configText = File.ReadAllText(@Main.ModsInstalledFile);
 
 			// Destroy any previously created objects, before populating it again.
 			modsList.Clear();
@@ -98,28 +97,28 @@ namespace AA.UI.Mods
 			// If there are any mods found, we populate the list with them.
 			if (configText.Length > 0)
 			{
-				InstalledMods = JsonHelper.FromJson<InstalledMod>(@configText);
+				installedMods = JsonHelper.FromJson<InstalledMod>(@configText);
 
-				modsList.AddRange(InstalledMods);
+				modsList.AddRange(installedMods);
 				modsList.Sort();
 
 				_versions = "";
-				for (int i = 0; i < InstalledMods.Length; i++)
+				for (int i = 0; i < installedMods.Length; i++)
 				{
-					_versions = _versions + ";" + InstalledMods[i].id;
+					_versions = _versions + ";" + installedMods[i].id;
 				}
 
 				_versions = _versions[1..];
 
-				ActiveRoutine = StartCoroutine(CheckVersions(InstalledMods.Length));
+				_activeRoutine = StartCoroutine(CheckVersions(installedMods.Length));
 			}
 			else // If the file is less than 1, there are no mods found!
 			{
 				//throw new NotImplementedException("CheckInstalledMods: Empty Config File");
 				Debug.Log("CheckInstalledMods: No Configuration in file.");
 
-				InstalledMods = JsonHelper.FromJson<InstalledMod>(@NothingFoundJson);
-				modsList.AddRange(InstalledMods);
+				installedMods = JsonHelper.FromJson<InstalledMod>(@NothingFoundJson);
+				modsList.AddRange(installedMods);
 			}
 		}
 
@@ -177,9 +176,9 @@ namespace AA.UI.Mods
 				Debug.Log("CheckVersions: Not sending request as string is null or empty!");
 			}
 
-			for (int i = 0; i < InstalledMods.Length; i++)
+			for (int i = 0; i < installedMods.Length; i++)
 			{
-				InstalledMods[i].latest = versions[i];
+				installedMods[i].latest = versions[i];
 			}
 
 			_listViewContent.Rebuild();
@@ -197,6 +196,158 @@ namespace AA.UI.Mods
 			return value;
 		}
 
+		public static IEnumerator FetchModArchive(DownloadStack stack, Action completed)
+		{
+			if (_alreadyDownloading)
+			{
+				yield break;
+			}
+			else
+			{
+				_alreadyDownloading = true;
+			}
+
+			Debug.Log("FetchModArchive: Entered!");
+
+			UnityWebRequestAsyncOperation download;
+			UnityWebRequest               www;
+
+			// Download everything from the stack (dependencies to mod)
+
+			if (stack.deps != null)
+			{
+				for (int i = 0; i < stack.totalphase; i++)
+				{
+					www                    = UnityWebRequest.Get(WebSiteUrl + "mods/" + stack.deps[i]);
+					www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
+					download               = www.SendWebRequest();
+					stack.SendMessage("Download stack: Checking next step...");
+					while (!download.isDone)
+					{
+						if (i == stack.deps.Count - 1)
+						{
+							stack.SendMessage("Downloading " + stack.deps[i] + " " + Mathf.RoundToInt(download.progress * 100) + "%",
+											  stack.dlphase);
+						}
+						else
+						{
+							stack.SendMessage("Downloading dependency " + stack.deps[i] + " " + Mathf.RoundToInt(download.progress * 100) + "%",
+											  stack.dlphase);
+						}
+
+						yield return null;
+					}
+
+					switch (www.result)
+					{
+						case UnityWebRequest.Result.ConnectionError:
+							Debug.Log("Network Error: " + www.responseCode + " " + www.error);
+
+							break;
+						case UnityWebRequest.Result.ProtocolError:
+							Debug.Log("HTTP Error: " + www.responseCode + " " + www.error);
+
+							break;
+						default:
+							Debug.Log("FetchModArchive saving downloaded file: " + stack.deps[i]);
+							File.WriteAllBytes(Main.ModsSavedBackupPath + stack.deps[i], www.downloadHandler.data);
+
+							if (stack.deps.Count - 1 == i)
+							{
+								Debug.Log("FetchModArchive: count = "   + stack.deps.Count);
+								Debug.Log("FetchModsArchive : index = " + i);
+
+								//Debug.Log("    Mods: " + stack.mods[1].title);
+								stack.SendMessage("Downloading " + stack.deps[i] + " 100%", stack.dlphase);
+
+								// Install: extract to Lua directory. HUH! how does that work?
+								stack.mods[i].enabled = false;
+
+								//Debug.Log("FetchModArchive: Dunno why, but it's always out of range, so skipped!");
+							}
+							else
+							{
+								Debug.Log("false");
+								stack.SendMessage("Downloading dependency " + stack.deps[i] + " 100%", stack.dlphase);
+
+								// Install: extract to Lua directory. HUH! how does that work?
+								stack.mods[i].enabled = false;
+							}
+
+							// Extract
+							Debug.Log("FetchModArchive: extracting the archive: " + Main.ModsSavedBackupPath +
+									  stack.deps[i]);
+							using (ZipArchive archive =
+								ZipFile.Open(Main.ModsSavedBackupPath + stack.deps[i], ZipArchiveMode.Update))
+							{
+								ZipArchiveExtensions.ExtractToDirectory(archive, Main.LuaPath, true);
+							}
+
+							stack.mods[i].enabled = true;
+							stack.SendMessage("Installing " + stack.deps[i], stack.dlphase);
+
+							break;
+					}
+
+					stack.dlphase += 1;
+				}
+
+				for (int i = 0; i < installedMods.Length; i++)
+				{
+					for (int j = 0; j < stack.mods.Count; j++)
+					{
+						if (installedMods[i].id == stack.mods[j].id)
+						{
+							Debug.Log("FetchModArchive - Matched mod: " + installedMods[i].title);
+
+							// Remove old mod archive file, check if it is a clean install and if so, remove file from disabled or Lua directory.
+							if (File.Exists(Main.ModsSavedBackupPath + stack.mods[j].url))
+							{
+								File.Delete(Main.LuaPath + stack.mods[j].url);
+							}
+
+							if (File.Exists(Main.ModsSavedDisabledPath + stack.mods[j].url))
+							{
+								File.Delete(Main.ModsSavedDisabledPath + stack.mods[j].url);
+							}
+
+							if (stack.mods[j].clean == 1)
+							{
+								if (File.Exists(Main.LuaPath + stack.mods[j].file))
+								{
+									File.Delete(Main.LuaPath + stack.mods[j].file);
+								}
+
+								if (Directory.Exists(Main.LuaPath + stack.mods[j].folder))
+								{
+									Directory.Delete(Main.LuaPath + stack.mods[j].folder, true);
+								}
+							}
+
+							Debug.Log("Attempting to remove mod from the fetching list.");
+							stack.mods.Remove((stack.mods[j]));
+						}
+					}
+
+					//var entry = new Mod();
+					Debug.Log("Attempting to add mod to installed mods list.");
+					stack.mods.Add(installedMods[i]);
+					Debug.Log("SUCCESS!!");
+				}
+
+				Mod[] myArray = stack.mods.ToArray();
+				File.WriteAllText(Main.ModsInstalledFile, JsonHelper.ToJson(myArray));
+				stack.SendMessage("Your mod is now installed!");
+			}
+			else
+			{
+				stack.SendMessage("ERROR: The download stack is empty. Something weird happened!!");
+			}
+
+			completed();
+			_alreadyDownloading = false;
+		}
+
 		private IEnumerator FetchModList(bool getDependencies = false)
 		{
 			if (_alreadyRefreshing)
@@ -208,7 +359,7 @@ namespace AA.UI.Mods
 				_alreadyRefreshing = true;
 			}
 
-			Debug.Log("Manager - FetchModList: entry");
+			//Debug.Log("Manager - FetchModList: entry");
 
 			// Get list of mods first.
 			var www = UnityWebRequest.Get(WebSiteUrl + "/getmods.php?request=mods");
@@ -229,15 +380,19 @@ namespace AA.UI.Mods
 					break;
 				default:
 					_jsonString = FixJson(www.downloadHandler.text);
-					Debug.Log("Manager - FetchModList: Mods: " + _jsonString);
+
+					//Debug.Log("Manager - FetchModList: Mods: " + _jsonString);
 
 					mods = JsonHelper.FromJson<Mod>(_jsonString);
-					Debug.Log("Manager - FetchModList: Mods[]: " + mods.Length);
+
+					//Debug.Log("Manager - FetchModList: Mods[]: " + mods.Length);
 
 					//PopulateModsList(false);
 					modsList.AddRange(mods);
 					modsList.Sort();
-					Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
+
+					//Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
+					_listViewContent.Rebuild();
 
 					break;
 			}
@@ -259,17 +414,21 @@ namespace AA.UI.Mods
 					break;
 				default:
 					_jsonString = FixJson(www.downloadHandler.text);
-					Debug.Log("Manager - FetchModList: Deps: " + _jsonString);
+
+					//Debug.Log("Manager - FetchModList: Deps: " + _jsonString);
 
 					if (_jsonString != null)
 					{
 						deps = JsonHelper.FromJson<Mod>(@_jsonString);
-						Debug.Log("Manager - FetchModList: Deps[]: " + deps.Length);
+
+						//Debug.Log("Manager - FetchModList: Deps[]: " + deps.Length);
 
 						//PopulateModsList(getDependencies);
 						modsList.AddRange(deps);
 						modsList.Sort();
-						Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
+
+						//Debug.Log("Manager - FetchModList: modsList count: " + modsList.Count);
+						_listViewContent.Rebuild();
 					}
 
 					break;
@@ -277,13 +436,6 @@ namespace AA.UI.Mods
 
 			yield return new WaitForSeconds(5);
 			_alreadyRefreshing = false;
-			_listViewContent.Rebuild();
-		}
-
-		public static IEnumerator GetModZip(DownloadStack dlstack, InstalledMod[] installedModsList,
-											Action<bool>  completed)
-		{
-			throw new NotImplementedException("GetModZip");
 		}
 
 		/// <summary>
@@ -297,7 +449,7 @@ namespace AA.UI.Mods
 				throw new Exception("ModManager - OnEnable: WTF!");
 			}
 
-			Debug.Log("OnEnable - RootVE: " + _rootVE);
+			//Debug.Log("OnEnable - RootVE: " + _rootVE);
 
 			#region Initialise elements for easy access.
 
@@ -410,7 +562,7 @@ namespace AA.UI.Mods
 				Directory.Delete(Main.LuaPath + mod.folder, true);
 			}
 
-			var tempList = InstalledMods.ToList();
+			var tempList = installedMods.ToList();
 			foreach (var entry in tempList)
 			{
 				if (entry.title == mod.title)
@@ -421,13 +573,14 @@ namespace AA.UI.Mods
 				}
 			}
 
-			InstalledMods = tempList.ToArray();
+			installedMods = tempList.ToArray();
+			SaveInstalledMods();
 			CheckInstalledMods();
 		}
 
 		public static void SaveInstalledMods()
 		{
-			File.WriteAllText(@Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
+			File.WriteAllText(@Main.ModsInstalledFile, JsonHelper.ToJson(installedMods));
 		}
 
 		private void SwitchListClicked(ClickEvent evt)
@@ -435,7 +588,7 @@ namespace AA.UI.Mods
 #if UNITY_STANDALONE_LINUX
 			if (Utilities.VoidDuplicateClick(evt))
 			{
-				Debug.Log("Ignoring duplicate click event!");
+				//Debug.Log("Ignoring duplicate click event!");
 
 				return;
 			}
@@ -452,7 +605,7 @@ namespace AA.UI.Mods
 					_listSwitcher.text = "Installed Mods";
 
 					//_columnHeaderInstalled.text = "Current";
-					_columnHeaderLatest.text = "Creator";
+					_columnHeaderInstalled.text = "Creator";
 
 					break;
 				case Mods.Available:
@@ -460,7 +613,7 @@ namespace AA.UI.Mods
 					_listSwitcher.text = "Available Mods";
 
 					//_columnHeaderInstalled.text = "Current";
-					_columnHeaderLatest.text = "Newest";
+					_columnHeaderInstalled.text = "Installed";
 
 					break;
 				default:
@@ -569,30 +722,30 @@ namespace AA.UI.Mods
 					ZipArchiveExtensions.ExtractToDirectory(archive, extractPath, true);
 				}
 
-				for (int i = 0; i < InstalledMods.Length; i++)
+				for (int i = 0; i < installedMods.Length; i++)
 				{
-					if (InstalledMods[i].title  == tempMod[0].title  ||
-						InstalledMods[i].folder == tempMod[0].folder ||
-						InstalledMods[i].file   == tempMod[0].file)
+					if (installedMods[i].title  == tempMod[0].title  ||
+						installedMods[i].folder == tempMod[0].folder ||
+						installedMods[i].file   == tempMod[0].file)
 					{
-						InstalledMods[i].creator   = tempMod[0].creator;
-						InstalledMods[i].title     = tempMod[0].title;
-						InstalledMods[i].desc      = tempMod[0].desc;
-						InstalledMods[i].version   = tempMod[0].version;
-						InstalledMods[i].deps      = tempMod[0].deps;
-						InstalledMods[i].isdep     = tempMod[0].isdep;
-						InstalledMods[i].icon      = tempMod[0].icon;
-						InstalledMods[i].log       = tempMod[0].log;
-						InstalledMods[i].folder    = tempMod[0].folder;
-						InstalledMods[i].file      = tempMod[0].file;
-						InstalledMods[i].backupzip = tempMod[0].url;
+						installedMods[i].creator   = tempMod[0].creator;
+						installedMods[i].title     = tempMod[0].title;
+						installedMods[i].desc      = tempMod[0].desc;
+						installedMods[i].version   = tempMod[0].version;
+						installedMods[i].deps      = tempMod[0].deps;
+						installedMods[i].isdep     = tempMod[0].isdep;
+						installedMods[i].icon      = tempMod[0].icon;
+						installedMods[i].log       = tempMod[0].log;
+						installedMods[i].folder    = tempMod[0].folder;
+						installedMods[i].file      = tempMod[0].file;
+						installedMods[i].backupzip = tempMod[0].url;
 
 						//_installedMods[x].enabled = tempMod[0].enabled; //default is the mod currently installed
-						if (!InstalledMods[i].enabled)
+						if (!installedMods[i].enabled)
 						{
 							// Copy lua to disabled
-							File.Move(Main.LuaPath               + InstalledMods[i].file,
-									  Main.ModsSavedDisabledPath + InstalledMods[i].file
+							File.Move(Main.LuaPath               + installedMods[i].file,
+									  Main.ModsSavedDisabledPath + installedMods[i].file
 									 );
 						}
 
@@ -600,7 +753,7 @@ namespace AA.UI.Mods
 					}
 				}
 
-				File.WriteAllText(Main.ModsInstalled, JsonHelper.ToJson(InstalledMods));
+				File.WriteAllText(Main.ModsInstalledFile, JsonHelper.ToJson(installedMods));
 
 				// fully complete, write it down the cfg file
 			}
