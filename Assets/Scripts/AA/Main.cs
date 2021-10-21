@@ -17,6 +17,7 @@ namespace AA
 #endif
 		private const string ChatLogsPattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
 
+		private static List<string> _appPaths;
 		private static string       _chatLogsPath;
 		private static string       _luaPath;
 		private static string       _modsInstalledFile;
@@ -84,36 +85,36 @@ namespace AA
 					break;
 			}
 
-			List<string> appPaths = new List<string>();
+			_appPaths = new List<string>();
 			if (Directory.Exists(@baseAppInstallLocation + @mainSuffix))
 			{
-				appPaths.Add(@baseAppInstallLocation + @mainSuffix);
+				_appPaths.Add(@baseAppInstallLocation + @mainSuffix);
 			}
 
 			if (Directory.Exists(@baseAppInstallLocation + @qaSuffix))
 			{
-				appPaths.Add(@baseAppInstallLocation + @qaSuffix);
+				_appPaths.Add(@baseAppInstallLocation + @qaSuffix);
 			}
 
-			switch (appPaths.Count)
+			switch (_appPaths.Count)
 			{
-				case 0:
+				case 0: // Error. Should be able to find at least one valid path!
 					throw new ApplicationException("Cannot find SotA's application path");
 
 					break;
-				case 1:
-					_sotaAppPath = appPaths[0].ToString();
+				case 1: // Single entry, so there is no choice to be made.
+					_sotaAppPath = _appPaths[0].ToString();
 
 					break;
-				case 2 when Testing is true:
+				case 2 when Testing is true: // A choice, but we're in DEBUG mode so stick to QA.
 					Debug.Log("Two or more Application paths available, using the QA one as TEST mode IS enabled.");
-					_sotaAppPath = appPaths[1].ToString();
+					_sotaAppPath = _appPaths[1].ToString();
 
 					break;
-				default:
+				default: // Choice for the user to make.
 					// TODO add selection code/dialogue box
 					Debug.Log("Two or more Application paths available, using the first one as TEST mode is not enabled.");
-					_sotaAppPath = appPaths[0].ToString();
+					_sotaAppPath = _appPaths[0].ToString();
 
 					break;
 			}
