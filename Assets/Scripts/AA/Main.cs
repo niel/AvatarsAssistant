@@ -10,7 +10,11 @@ namespace AA
 {
 	public class Main : MonoBehaviour
 	{
-		private const bool   Testing         = true;
+#if DEBUG
+		private const bool Testing = true;
+#else
+		private const bool   Testing = false;
+#endif
 		private const string ChatLogsPattern = @"SotaChatLog_(?<name>[\w ]+)_(?<date>\d{4}-\d{2}-\d{2})";
 
 		private static string       _chatLogsPath;
