@@ -254,20 +254,18 @@ namespace AA.UI.Mods
 
 							if (stack.deps.Count - 1 == i)
 							{
-								Debug.Log("FetchModArchive: count = "   + stack.deps.Count);
-								Debug.Log("FetchModsArchive : index = " + i);
+								//Debug.Log("FetchModArchive: count = "   + stack.deps.Count);
+								//Debug.Log("FetchModsArchive : index = " + i);
 
 								//Debug.Log("    Mods: " + stack.mods[1].title);
 								stack.SendMessage("Downloading " + stack.deps[i] + " 100%", stack.dlphase);
 
 								// Install: extract to Lua directory. HUH! how does that work?
 								stack.mods[i].enabled = false;
-
-								//Debug.Log("FetchModArchive: Dunno why, but it's always out of range, so skipped!");
 							}
 							else
 							{
-								Debug.Log("false");
+								//Debug.Log("false");
 								stack.SendMessage("Downloading dependency " + stack.deps[i] + " 100%", stack.dlphase);
 
 								// Install: extract to Lua directory. HUH! how does that work?
@@ -324,13 +322,13 @@ namespace AA.UI.Mods
 								}
 							}
 
-							Debug.Log("Attempting to remove mod from the fetching list.");
+							//Debug.Log("Attempting to remove mod from the fetching list.");
 							stack.mods.Remove((stack.mods[j]));
 						}
 					}
 
 					//var entry = new Mod();
-					Debug.Log("Attempting to add mod to installed mods list.");
+					//Debug.Log("Attempting to add mod to installed mods list.");
 					stack.mods.Add(installedMods[i]);
 					Debug.Log("SUCCESS!!");
 				}
@@ -565,7 +563,7 @@ namespace AA.UI.Mods
 			var tempList = installedMods.ToList();
 			foreach (var entry in tempList)
 			{
-				if (entry.title == mod.title)
+				if (entry.id == mod.id)
 				{
 					tempList.Remove(entry);
 
@@ -576,6 +574,7 @@ namespace AA.UI.Mods
 			installedMods = tempList.ToArray();
 			SaveInstalledMods();
 			CheckInstalledMods();
+			_listViewContent.Rebuild();
 		}
 
 		public static void SaveInstalledMods()

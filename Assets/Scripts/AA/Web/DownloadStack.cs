@@ -37,13 +37,15 @@ namespace AA.Web
 				if (this.message[index] != messageToSend)
 				{
 					this.message[index] = messageToSend;
-					Debug.Log("Download stack message: " + messageToSend);
+
+					//Debug.Log("Download stack message: " + messageToSend);
 				}
 			}
 			else if (this.message.Count == 0 || this.message[this.message.Count - 1] != messageToSend)
 			{
 				this.message.Add(messageToSend);
-				Debug.Log("Download stack message: " + messageToSend);
+
+				//Debug.Log("Download stack message: " + messageToSend);
 			}
 		}
 	}

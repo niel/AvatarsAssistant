@@ -92,6 +92,8 @@ namespace AA.UI.Mods
 			if (latest.text == "")
 			{
 				latest.text = "Fetching...";
+				latest.AddToClassList("version-current");
+				_button2.SetEnabled(false);
 			}
 			else if (_source.version == _source.latest)
 			{
