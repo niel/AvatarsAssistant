@@ -669,30 +669,35 @@ namespace AA.UI.Mods
 				yield return null;
 			}
 
-			if (www.result == UnityWebRequest.Result.ConnectionError)
+			switch (www.result)
 			{
-				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
-			}
-			else if (www.result == UnityWebRequest.Result.ProtocolError)
-			{
-				Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
-			}
-			else
-			{
-				string jsonString = FixJson(www.downloadHandler.text);
-				Debug.Log(jsonString);
-				if (jsonString != null)
+				case UnityWebRequest.Result.ConnectionError:
+					Debug.Log("Network Error: " + www.error + " " + www.responseCode);
+
+					break;
+				case UnityWebRequest.Result.ProtocolError:
+					Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
+
+					break;
+				default:
 				{
-					tempMod = JsonHelper.FromJson<Mod>(@jsonString);
+					string jsonString = FixJson(www.downloadHandler.text);
+					Debug.Log(jsonString);
+					if (jsonString != null)
+					{
+						tempMod = JsonHelper.FromJson<Mod>(@jsonString);
+					}
+
+					break;
 				}
 			}
 
 			Debug.Log(tempMod[0].url);
 
-			// Update the mod with the new info
+			// Use the new url to fetch the Updated mod.
 			www = UnityWebRequest.Get(WebSiteUrl + "mods/" + tempMod[0].url);
 
-			// Use this if you have any problem with a certificat, need to set the public key into AcceptAllCertificatesSignedWithASpecificiedPublicKey.cs script
+			// Use this if you have any problem with a certificate, need to set the public key into AcceptAllCertificatesSignedWithASpecifiedPublicKey.cs script
 			www.certificateHandler = new AcceptAllCertificatesSignedWithASpecificKeyPublicKey();
 			connection             = www.SendWebRequest();
 
@@ -701,64 +706,67 @@ namespace AA.UI.Mods
 				yield return null;
 			}
 
-			if (www.result == UnityWebRequest.Result.ConnectionError)
+			switch (www.result)
 			{
-				Debug.Log("Network Error: " + www.error + " " + www.responseCode);
-			}
-			else if (www.result == UnityWebRequest.Result.ProtocolError)
-			{
-				Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
-			}
-			else
-			{
-				byte[] results     = www.downloadHandler.data;
-				string zipSavePath = Main.ModsSavedBackupPath;
-				string extractPath = Main.LuaPath;
+				case UnityWebRequest.Result.ConnectionError:
+					Debug.Log("Network Error: " + www.error + " " + www.responseCode);
 
-				File.WriteAllBytes(zipSavePath + tempMod[0].url, results);
-				using (ZipArchive archive = ZipFile.Open(zipSavePath + tempMod[0].url, ZipArchiveMode.Update))
-				{
-					ZipArchiveExtensions.ExtractToDirectory(archive, extractPath, true);
-				}
+					break;
+				case UnityWebRequest.Result.ProtocolError:
+					Debug.Log("HTTP Error: " + www.error + " " + www.responseCode);
 
-				for (int i = 0; i < installedMods.Length; i++)
+					break;
+				default:
 				{
-					if (installedMods[i].title  == tempMod[0].title  ||
-						installedMods[i].folder == tempMod[0].folder ||
-						installedMods[i].file   == tempMod[0].file)
+					string zipSavePath = Main.ModsSavedBackupPath  + tempMod[0].url;
+					Debug.Log("UpdateMod saving downloaded file: " + tempMod[0].url);
+					File.WriteAllBytes(zipSavePath, www.downloadHandler.data);
+					using (ZipArchive archive = ZipFile.Open(zipSavePath, ZipArchiveMode.Update))
 					{
-						installedMods[i].creator   = tempMod[0].creator;
-						installedMods[i].title     = tempMod[0].title;
-						installedMods[i].desc      = tempMod[0].desc;
-						installedMods[i].version   = tempMod[0].version;
-						installedMods[i].deps      = tempMod[0].deps;
-						installedMods[i].isdep     = tempMod[0].isdep;
-						installedMods[i].icon      = tempMod[0].icon;
-						installedMods[i].log       = tempMod[0].log;
-						installedMods[i].folder    = tempMod[0].folder;
-						installedMods[i].file      = tempMod[0].file;
-						installedMods[i].backupzip = tempMod[0].url;
-
-						//_installedMods[x].enabled = tempMod[0].enabled; //default is the mod currently installed
-						if (!installedMods[i].enabled)
-						{
-							// Copy lua to disabled
-							File.Move(Main.LuaPath               + installedMods[i].file,
-									  Main.ModsSavedDisabledPath + installedMods[i].file
-									 );
-						}
-
-						break;
+						ZipArchiveExtensions.ExtractToDirectory(archive, Main.LuaPath, true);
 					}
+
+					for (int i = 0; i < installedMods.Length; i++)
+					{
+						if (installedMods[i].title  == tempMod[0].title  ||
+							installedMods[i].folder == tempMod[0].folder ||
+							installedMods[i].file   == tempMod[0].file)
+						{
+							installedMods[i].creator   = tempMod[0].creator;
+							installedMods[i].title     = tempMod[0].title;
+							installedMods[i].desc      = tempMod[0].desc;
+							installedMods[i].version   = tempMod[0].version;
+							installedMods[i].deps      = tempMod[0].deps;
+							installedMods[i].isdep     = tempMod[0].isdep;
+							installedMods[i].icon      = tempMod[0].icon;
+							installedMods[i].log       = tempMod[0].log;
+							installedMods[i].folder    = tempMod[0].folder;
+							installedMods[i].file      = tempMod[0].file;
+							installedMods[i].backupzip = tempMod[0].url;
+
+							//_installedMods[x].enabled = tempMod[0].enabled; //default is the mod currently installed
+							if (!installedMods[i].enabled)
+							{
+								// Copy lua to disabled
+								File.Move(Main.LuaPath               + installedMods[i].file,
+										  Main.ModsSavedDisabledPath + installedMods[i].file
+										 );
+							}
+
+							break;
+						}
+					}
+
+					// Done, write the configuration to disc.
+					SaveInstalledMods();
+
+					break;
 				}
-
-				File.WriteAllText(Main.ModsInstalledFile, JsonHelper.ToJson(installedMods));
-
-				// fully complete, write it down the cfg file
 			}
 
-			completed.Invoke(true);
 			_alreadyDownloading = false;
+			CheckInstalledMods();
+			_listViewContent.Rebuild();
 		}
 	}
 }

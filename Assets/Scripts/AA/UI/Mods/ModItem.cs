@@ -284,7 +284,7 @@ namespace AA.UI.Mods
 			Debug.Log("ModItem - Install, total files to download: " + _downloadStack.deps.Count);
 			_downloadStack.totalphase = _downloadStack.deps.Count; // * 2 = download + install
 			_activeRoutine =
-				_manager.StartCoroutine(Manager.FetchModArchive(_downloadStack, CompletedIntall));
+				_manager.StartCoroutine(Manager.FetchModArchive(_downloadStack, CompletedInstall));
 			_manager.downloading = true;
 
 			//Debug.Log("ModItem total phase: " + downloadStack.totalphase);
@@ -322,7 +322,7 @@ namespace AA.UI.Mods
 			_activeRoutine = _manager.StartCoroutine(_manager.UpdateMod(_source.id, true, value => _completed = value));
 		}
 
-		private void CompletedIntall()
+		private void CompletedInstall()
 		{
 			_manager.downloading = false;
 			_button2.text        = "Installed";
