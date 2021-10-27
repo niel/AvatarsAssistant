@@ -24,6 +24,7 @@ namespace AA.UI
 		{
 			if (Mathf.Abs(evt.timestamp - _lastClick) < 100)
 			{
+				//Debug.Log("Ignoring duplicate click!");
 				return true;
 			}
 
