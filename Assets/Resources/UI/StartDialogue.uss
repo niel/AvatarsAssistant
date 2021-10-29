@@ -1,0 +1,55 @@
+.button {
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: flex-start;
+	border-left-color: rgb(0, 0, 0);
+	border-right-color: rgb(0, 0, 0);
+	border-top-color: rgb(0, 0, 0);
+	border-bottom-color: rgb(0, 0, 0);
+	border-left-width: 3px;
+	border-right-width: 3px;
+	border-top-width: 3px;
+	border-bottom-width: 3px;
+	background-color: rgba(0, 0, 0, 0.5);
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	color: rgba(255, 255, 255, 255);
+}
+
+.hover:active {
+	align-items: center;
+	flex-direction: column;
+	justify-content: flex-end;
+	width: auto;
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	height: auto;
+	display: flex;
+	color: rgba(145, 153, 154, 255);
+}
+
+.button:hover {
+	width: auto;
+	height: auto;
+	bottom: 0;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	border-top-right-radius: 5px;
+	border-bottom-right-radius: 5px;
+	color: rgba(15, 217, 27, 255);
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.unity-base-popup-field__input {
+	background-color: black;
+}
+
+.unity-base-popup-field__text {
+}
